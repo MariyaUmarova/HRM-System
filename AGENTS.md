@@ -23,7 +23,9 @@ instructions.
 - Phase 1 uses synthetic mock adapters only.
 - 57 tests cover workflow order, roles, customer isolation, knowledge search,
   tooltips and structural ATS-duplication guardrails.
-- GitHub, Supabase, deployment, Huntflow, mail and AI are not connected yet.
+- The private GitHub source repository is `MariyaUmarova/HRM-System`; its `main`
+  baseline and CI are connected. Supabase, deployment, Huntflow, mail and AI are not
+  connected yet.
 - Do not report an integration as working until it has been implemented and verified.
 
 ## Non-negotiable product rules
@@ -147,4 +149,3 @@ dependencies are installed.
 6. Update `docs/handoff/CURRENT_STATE.md`, `ROADMAP.md` and `DECISIONS.md` when the
    repository state or an architectural decision changes.
 7. Finish with changed files, checks, remaining mocked areas and the next safe step.
-

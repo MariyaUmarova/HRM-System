@@ -22,12 +22,13 @@ Handoff date: 2026-08-09.
 - Synthetic fixtures only; no real candidate, employee or vacancy records.
 - Automated guardrails for workflow order, role access, customer isolation,
   knowledge integrity, search, requests and tooltips.
+- Private GitHub source repository `MariyaUmarova/HRM-System` with the verified
+  baseline on `main` and passing GitHub Actions CI.
 
 ## Not implemented or connected
 
 - Real user authentication or SSO.
 - Supabase database, Auth, Storage, Realtime or Edge Functions.
-- GitHub remote repository.
 - Production hosting and domain.
 - Huntflow API synchronization.
 - Gmail or Yandex Mail integration.

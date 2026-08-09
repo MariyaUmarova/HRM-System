@@ -30,7 +30,7 @@ Start here:
 | Frontend, workflow, role preview, knowledge base | Implemented |
 | Mock adapters and synthetic fixtures | Implemented |
 | Supabase database and Auth | Not connected |
-| GitHub repository and CI | CI file included; remote not connected |
+| GitHub repository and CI | Connected: `MariyaUmarova/HRM-System`; CI passing on `main` |
 | Huntflow API | Not connected |
 | Gmail / Yandex Mail | Not connected |
 | AI services and Perplexity | Not connected |
@@ -72,4 +72,3 @@ pnpm build
 - `docs/product/` — approved concept and architecture.
 - `docs/references/v7_4/` — original historical/source materials.
 - `docs/integrations/` — access and integration setup without secrets.
-
