@@ -5,13 +5,16 @@ service without the product owner's confirmation.
 
 ## Phase 0 — Make the project portable
 
-- Create a private GitHub repository and protect `main`.
-- Push the verified baseline through a feature branch and pull request.
-- Enable CI for lint, tests and build.
-- Choose a preview/production host and connect it to GitHub.
-- Record environments: local, preview, development and production.
+- [x] Create the private GitHub repository `MariyaUmarova/HRM-System`.
+- [x] Push the verified baseline to `main` (the repository had no application base
+  branch to target with a pull request).
+- [x] Enable CI for lint, 57 tests and build.
+- [ ] Protect `main` and require the CI check for future pull requests.
+- [ ] Choose a preview/production host and connect it to GitHub.
+- [ ] Record environments: local, preview, development and production.
 
-Exit: the same code can be opened by Codex from GitHub and previewed from any PC.
+Current status: Codex can open the source from GitHub on another authorized computer;
+the browser-accessible preview URL is still pending.
 
 ## Phase 1 — Supabase foundation
 
