@@ -144,7 +144,27 @@ function roundedRect(
   context.closePath();
 }
 
-function wrapText(
+function splitLongWord(
+  context: CanvasRenderingContext2D,
+  word: string,
+  maxWidth: number,
+): string[] {
+  const chunks: string[] = [];
+  let chunk = "";
+  for (const character of word) {
+    const candidate = chunk + character;
+    if (chunk && context.measureText(candidate).width > maxWidth) {
+      chunks.push(chunk);
+      chunk = character;
+    } else {
+      chunk = candidate;
+    }
+  }
+  if (chunk) chunks.push(chunk);
+  return chunks;
+}
+
+export function wrapCanvasText(
   context: CanvasRenderingContext2D,
   text: string,
   maxWidth: number,
@@ -158,15 +178,27 @@ function wrapText(
       lines.push("");
       return;
     }
+
     let line = "";
     words.forEach((word) => {
+      if (context.measureText(word).width > maxWidth) {
+        if (line) {
+          lines.push(line);
+          line = "";
+        }
+        const chunks = splitLongWord(context, word, maxWidth);
+        lines.push(...chunks.slice(0, -1));
+        line = chunks.at(-1) ?? "";
+        return;
+      }
+
       const candidate = line ? `${line} ${word}` : word;
       if (!line || context.measureText(candidate).width <= maxWidth) {
         line = candidate;
-        return;
+      } else {
+        lines.push(line);
+        line = word;
       }
-      lines.push(line);
-      line = word;
     });
     if (line) lines.push(line);
   });
@@ -181,7 +213,7 @@ function drawWrappedText(
   maxWidth: number,
   lineHeight: number,
 ): number {
-  const lines = wrapText(context, text, maxWidth);
+  const lines = wrapCanvasText(context, text, maxWidth);
   lines.forEach((line, index) => context.fillText(line, x, y + index * lineHeight));
   return lines.length * lineHeight;
 }
@@ -314,7 +346,7 @@ function drawFirstPage(
     context.font = row.main
       ? "700 13.2px Arial, Helvetica, sans-serif"
       : "12.4px Arial, Helvetica, sans-serif";
-    return wrapText(context, row.text, 471).length;
+    return wrapCanvasText(context, row.text, 471).length;
   });
   const payHeight =
     12 +
@@ -348,20 +380,20 @@ function drawFirstPage(
   context.lineWidth = 1.5;
   context.stroke();
   context.fillStyle = INK;
-  context.font = "700 14px Arial, Helvetica, sans-serif";
+  context.font = "700 12.5px Arial, Helvetica, sans-serif";
   context.fillText("ДМС", 42, 766);
-  context.fillStyle = "#6f7784";
-  context.font = "10px Arial, Helvetica, sans-serif";
-  context.fillText('Страховая компания "Лучи"', 78, 769);
+  context.fillStyle = "#526784";
+  context.font = "12.5px Arial, Helvetica, sans-serif";
+  context.fillText("Страховая компания «Лучи»", 76, 766);
   context.fillStyle = BLUE;
-  context.font = "20px Arial, Helvetica, sans-serif";
-  context.fillText("+", 231, 761);
+  context.font = "500 19px Arial, Helvetica, sans-serif";
+  context.fillText("+", 239, 761);
   context.fillStyle = INK;
-  context.font = "700 14px Arial, Helvetica, sans-serif";
-  context.fillText("Английский язык", 259, 766);
-  context.fillStyle = "#6f7784";
-  context.font = "10px Arial, Helvetica, sans-serif";
-  context.fillText("SkyEng", 386, 769);
+  context.font = "700 12.5px Arial, Helvetica, sans-serif";
+  context.fillText("Английский язык", 266, 766);
+  context.fillStyle = "#526784";
+  context.font = "12.5px Arial, Helvetica, sans-serif";
+  context.fillText("SkyEng", 382, 766);
 
   context.drawImage(assets["pattern-large.png"], 0, 804, PAGE_WIDTH, 209);
   context.fillStyle = "#ffffff";
@@ -380,16 +412,26 @@ function drawFirstPage(
   return canvas;
 }
 
+export function calculateTaskCardHeight(
+  taskLineCount: number,
+  resultLineCount: number,
+): number {
+  const taskHeight = Math.max(1, taskLineCount) * 18;
+  if (resultLineCount > 0) {
+    return 100 + taskHeight + resultLineCount * 17;
+  }
+  return Math.max(88, 58 + taskHeight);
+}
+
 function taskCardHeight(context: CanvasRenderingContext2D, item: OfferTask): number {
   context.font = "13px Arial, Helvetica, sans-serif";
-  const taskLines = wrapText(context, item.task.trim(), 430).length;
-  let height = 44 + taskLines * 18;
+  const taskLineCount = wrapCanvasText(context, item.task.trim(), 430).length;
+  let resultLineCount = 0;
   if (item.result.trim()) {
     context.font = "12px Arial, Helvetica, sans-serif";
-    const resultLines = wrapText(context, item.result.trim(), 430).length;
-    height += 33 + resultLines * 17;
+    resultLineCount = wrapCanvasText(context, item.result.trim(), 430).length;
   }
-  return Math.max(88, height);
+  return calculateTaskCardHeight(taskLineCount, resultLineCount);
 }
 
 function drawTaskCard(
@@ -405,6 +447,10 @@ function drawTaskCard(
   context.strokeStyle = LINE;
   context.lineWidth = 1;
   context.stroke();
+
+  context.save();
+  roundedRect(context, 34, y, 501, height, 10);
+  context.clip();
 
   context.beginPath();
   context.arc(59, y + 24, 11.5, 0, Math.PI * 2);
@@ -444,6 +490,7 @@ function drawTaskCard(
     drawWrappedText(context, item.result.trim(), 78, lineY + 34, 430, 17);
   }
 
+  context.restore();
   return height;
 }
 

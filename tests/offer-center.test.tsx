@@ -5,6 +5,8 @@ import { OfferCenterBuilder } from "@/components/offer-center/OfferCenterBuilder
 import {
   buildRasterPdf,
   buildStoredZip,
+  calculateTaskCardHeight,
+  wrapCanvasText,
 } from "@/components/offer-center/offer-export";
 import {
   getMissingFields,
@@ -57,6 +59,23 @@ describe("offer model", () => {
 });
 
 describe("offer export containers", () => {
+  it("wraps a long unbroken task token inside the available width", () => {
+    const context = {
+      measureText: (value: string) => ({ width: value.length * 10 }),
+    } as unknown as CanvasRenderingContext2D;
+    expect(wrapCanvasText(context, "1234567890", 30)).toEqual([
+      "123",
+      "456",
+      "789",
+      "0",
+    ]);
+  });
+
+  it("keeps all expected-result lines inside the calculated card height", () => {
+    const resultBottom = 86 + 18 + 2 * 17;
+    expect(calculateTaskCardHeight(1, 2)).toBeGreaterThan(resultBottom);
+  });
+
   it("builds a readable stored ZIP with every supplied filename", async () => {
     const archive = await buildStoredZip([
       { name: "offer_1.png", blob: new Blob(["page-one"]) },

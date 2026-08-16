@@ -167,11 +167,15 @@ function FirstPage({ draft }: { draft: OfferDraft }) {
         </div>
 
         <div className={styles.benefits}>
-          <strong>ДМС</strong>
-          <span className={styles.benefitDetail}>Страховая компания &quot;Лучи&quot;</span>
+          <span className={styles.benefitItem}>
+            <strong>ДМС</strong>
+            <span>Страховая компания &laquo;Лучи&raquo;</span>
+          </span>
           <span className={styles.plus}>+</span>
-          <strong>Английский язык</strong>
-          <span className={styles.benefitDetail}>SkyEng</span>
+          <span className={styles.benefitItem}>
+            <strong>Английский язык</strong>
+            <span>SkyEng</span>
+          </span>
         </div>
       </div>
       <BrandFooter answerDate={draft.answerDate} />

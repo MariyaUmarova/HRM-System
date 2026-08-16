@@ -172,31 +172,40 @@
   right: 0;
   bottom: 4px;
   display: grid;
-  grid-template-columns: auto auto auto auto auto;
+  grid-template-columns: auto auto auto;
   align-items: center;
   justify-content: start;
-  gap: 8px;
+  gap: 12px;
   min-height: 42px;
   border: 1.5px solid var(--offer-blue);
   border-radius: 18px;
-  padding: 5px 12px;
-  font-size: 12px;
+  padding: 6px 12px;
+  color: var(--offer-ink);
+  font-size: 12.5px;
   line-height: 1.2;
   white-space: nowrap;
 }
 
-.benefits strong {
-  font-size: 14px;
+.benefitItem {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 6px;
+  color: #526784;
+  font-size: 12.5px;
+  font-weight: 400;
 }
 
-.benefitDetail {
-  color: #6f7784;
-  font-size: 10px;
+.benefitItem strong {
+  color: var(--offer-ink);
+  font-size: inherit;
+  font-weight: 700;
 }
 
 .plus {
   color: var(--offer-blue);
-  font-size: 20px;
+  font-size: 19px;
+  font-weight: 500;
+  line-height: 1;
 }
 
 .footBand {
@@ -322,6 +331,7 @@
 
 .taskCard {
   flex: 0 0 auto;
+  overflow: hidden;
   border: 1px solid var(--offer-line);
   border-radius: 10px;
   background: #ffffff;
@@ -361,8 +371,11 @@
 }
 
 .taskText {
+  min-width: 0;
+  max-width: 100%;
   padding-left: 31px;
   overflow-wrap: anywhere;
+  word-break: break-word;
   font-size: 13px;
   line-height: 1.36;
   white-space: pre-line;
@@ -370,6 +383,7 @@
 
 .resultBlock {
   display: block;
+  min-width: 0;
   margin: 10px 0 0 31px;
   border-top: 1px solid #d7e7fb;
   padding-top: 9px;
@@ -388,7 +402,10 @@
 }
 
 .resultText {
+  min-width: 0;
+  max-width: 100%;
   overflow-wrap: anywhere;
+  word-break: break-word;
   color: var(--offer-ink);
   font-size: 12px;
   line-height: 1.38;
