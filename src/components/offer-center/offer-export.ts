@@ -220,6 +220,12 @@ function concat(parts: Uint8Array[]): Uint8Array {
   return result;
 }
 
+function toArrayBuffer(bytes: Uint8Array): ArrayBuffer {
+  const copy = new Uint8Array(bytes.byteLength);
+  copy.set(bytes);
+  return copy.buffer;
+}
+
 async function makeZip(files: Array<{ name: string; blob: Blob }>): Promise<Blob> {
   const encoder = new TextEncoder();
   const locals: Uint8Array[] = [];
@@ -283,7 +289,10 @@ async function makeZip(files: Array<{ name: string; blob: Blob }>): Promise<Blob
     uint32(body.length),
     uint16(0),
   ]);
-  return new Blob([body, directory, end], { type: "application/zip" });
+  return new Blob(
+    [toArrayBuffer(body), toArrayBuffer(directory), toArrayBuffer(end)],
+    { type: "application/zip" },
+  );
 }
 
 function jpegBytes(dataUrl: string): Uint8Array {
@@ -353,7 +362,7 @@ function makePdf(canvases: HTMLCanvasElement[]): Blob {
   push(
     `trailer\n<< /Size ${nextObject} /Root 1 0 R >>\nstartxref\n${xrefPosition}\n%%EOF`,
   );
-  return new Blob(chunks, { type: "application/pdf" });
+  return new Blob(chunks.map(toArrayBuffer), { type: "application/pdf" });
 }
 
 let pptxLoader: Promise<void> | null = null;
