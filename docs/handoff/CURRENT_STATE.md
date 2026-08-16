@@ -7,6 +7,8 @@ Handoff date: 2026-08-16.
 - Next.js 16, React 19 and TypeScript application.
 - Responsive internal workspace and isolated customer request view.
 - Development role preview for Recruiter, Head of Recruitment, HRD and Customer.
+- The visible site menu does not expose role switching; it only identifies the
+  server-provided test profile and role.
 - Head of Recruitment and HRD share the same management access model.
 - Exact approved ten-stage recruiter workflow.
 - Each workflow stage contains “Вход в процесс”, “Участники” and
@@ -23,7 +25,7 @@ Handoff date: 2026-08-16.
 - Typed adapter boundaries for future Huntflow and backend integrations.
 - Synthetic fixtures only; no real candidate, employee or vacancy records.
 - Automated guardrails for workflow order, role access, customer isolation,
-  knowledge integrity, search, requests, tooltips and offer review.
+  knowledge integrity, search, requests, tooltips, profile header and offer review.
 - Private GitHub source repository MariyaUmarova/HRM-System with the verified
   baseline on main and passing GitHub Actions CI.
 
@@ -42,8 +44,9 @@ Handoff date: 2026-08-16.
 
 ## Important technical facts
 
-- Role selection currently uses a development-only cookie. It is not a security
-  boundary and must be replaced by server-validated Auth plus database RLS.
+- The preview role still comes from a development-only cookie, but users can no
+  longer change it from the site menu. The cookie is not a security boundary and
+  must be replaced by server-validated Auth plus database RLS.
 - Mock request data is in process memory and resets when the server restarts.
 - The Offer Center prototype is client-only: changing or refreshing the page discards
   the draft. Printing uses the browser's native dialog.
@@ -60,6 +63,6 @@ Handoff date: 2026-08-16.
     pnpm test
     pnpm build
 
-At handoff the expected result is: lint passes, 61 tests pass, and the production
+At handoff the expected result is: lint passes, 63 tests pass, and the production
 build succeeds. The receiving agent must rerun these checks and report the actual
 result before making material changes.

@@ -20,6 +20,8 @@ These decisions are durable unless the product owner explicitly changes them.
 - Customer.
 - Head of Recruitment and HRD have the same management permissions.
 - There is no separate Administrator account in the approved user model.
+- A signed-in user's role and interface are assigned by trusted server-side identity
+  data; users cannot change roles from a site menu.
 - HRBP, General Director and HR Operations/KDP may participate in business processes
   without receiving portal accounts in the current scope.
 - Customers may access only their own request through an isolated protected surface.
