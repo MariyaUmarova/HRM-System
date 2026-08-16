@@ -12,6 +12,8 @@ const eslintConfig = defineConfig([
     "out/**",
     "build/**",
     "next-env.d.ts",
+    // Prebuilt, attributed browser libraries are linted upstream.
+    "public/vendor/**",
   ]),
 ]);
 
