@@ -1,6 +1,6 @@
 # Current state at handoff
 
-Handoff date: 2026-08-09.
+Handoff date: 2026-08-16.
 
 ## Implemented
 
@@ -16,14 +16,16 @@ Handoff date: 2026-08-09.
 - Weekly recruiter focus, offer approval and draft artifact mock cards.
 - Customer intake request mock flow with status and assignment controls for
   management roles.
-- Placeholder screens for Offer Center, interview analysis, HR radar and platform
-  management. They explicitly identify disconnected functionality.
+- Offer Center prototype with a synthetic-data form, live one-page visual preview,
+  required human confirmation and browser print/save-to-PDF.
+- Placeholder screens for interview analysis, HR radar and platform management.
+  They explicitly identify disconnected functionality.
 - Typed adapter boundaries for future Huntflow and backend integrations.
 - Synthetic fixtures only; no real candidate, employee or vacancy records.
 - Automated guardrails for workflow order, role access, customer isolation,
-  knowledge integrity, search, requests and tooltips.
-- Private GitHub source repository `MariyaUmarova/HRM-System` with the verified
-  baseline on `main` and passing GitHub Actions CI.
+  knowledge integrity, search, requests, tooltips and offer review.
+- Private GitHub source repository MariyaUmarova/HRM-System with the verified
+  baseline on main and passing GitHub Actions CI.
 
 ## Not implemented or connected
 
@@ -34,7 +36,8 @@ Handoff date: 2026-08-09.
 - Gmail or Yandex Mail integration.
 - AI parsing, interview analysis or spelling correction.
 - Perplexity/RSS/news ingestion.
-- Offer document rendering, immutable versioning and email dispatch.
+- Server-side offer rendering, durable storage, immutable versioning and email
+  dispatch.
 - Production audit log, observability, queues and background jobs.
 
 ## Important technical facts
@@ -42,21 +45,21 @@ Handoff date: 2026-08-09.
 - Role selection currently uses a development-only cookie. It is not a security
   boundary and must be replaced by server-validated Auth plus database RLS.
 - Mock request data is in process memory and resets when the server restarts.
+- The Offer Center prototype is client-only: changing or refreshing the page discards
+  the draft. Printing uses the browser's native dialog.
 - Huntflow adapters intentionally expose single-object references only. Do not add
   vacancy or candidate list pages to this portal.
 - Placeholder functionality must remain clearly marked until a real backend path is
   implemented and tested.
-- Historical Claude prompts in `docs/CLAUDE_*.md` describe earlier work. They are not
-  current product authority; `AGENTS.md` and `docs/product/` take precedence.
+- Historical Claude prompts in docs/CLAUDE_*.md describe earlier work. They are not
+  current product authority; AGENTS.md and docs/product/ take precedence.
 
 ## Expected verification baseline
 
-```bash
-pnpm lint
-pnpm test
-pnpm build
-```
+    pnpm lint
+    pnpm test
+    pnpm build
 
-At handoff the expected result is: lint passes, 57 tests pass, and the production
+At handoff the expected result is: lint passes, 61 tests pass, and the production
 build succeeds. The receiving agent must rerun these checks and report the actual
 result before making material changes.

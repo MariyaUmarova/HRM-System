@@ -1,15 +1,8 @@
 import { AccessDenied } from "@/components/access/AccessDenied";
-import { PlaceholderScreen } from "@/components/ui/PlaceholderScreen";
-import { HelpTooltip } from "@/components/ui/HelpTooltip";
+import { OfferCenterBuilder } from "@/components/offer-center/OfferCenterBuilder";
+import { Breadcrumbs } from "@/components/ui/Breadcrumbs";
 import { checkAccess } from "@/lib/auth/require-role";
 import { getPreviewRole } from "@/lib/auth/session";
-
-const STEPS = [
-  "Подтянуть данные из Хантфлоу или вставить их одним сообщением",
-  "Проверить распознанные поля — спорные подсвечиваются для подтверждения",
-  "Сформировать PDF оффера и очищенное резюме",
-  "Собрать письмо на согласование с фиксированными адресатами",
-];
 
 export default async function OfferCenterPage() {
   const role = await getPreviewRole();
@@ -17,44 +10,22 @@ export default async function OfferCenterPage() {
   if (!gate.allowed) return <AccessDenied requiredRoleLabel={gate.requiredRoleLabel} />;
 
   return (
-    <PlaceholderScreen
-      breadcrumbs={[{ label: "Моя работа", href: "/" }, { label: "Центр офферов" }]}
-      title="Центр офферов"
-      description="Сборка оффера, версии, PDF, очищенное резюме и письмо на согласование."
-      mocked="Сборка PDF, распознавание полей и отправка письма не подключены. Ниже — статический макет шагов и фиксированных правил согласования."
-    >
-      <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-        <div className="rounded-xl border border-border bg-surface p-5">
-          <h2 className="text-sm font-semibold text-foreground">Шаги сборки оффера</h2>
-          <ol className="mt-3 flex flex-col gap-2 text-sm text-foreground">
-            {STEPS.map((step, i) => (
-              <li key={step} className="flex gap-2">
-                <span className="font-medium text-brand">{i + 1}.</span>
-                <span>{step}</span>
-              </li>
-            ))}
-          </ol>
-        </div>
-        <div className="rounded-xl border border-border bg-surface p-5">
-          <h2 className="flex items-center gap-2 text-sm font-semibold text-foreground">
-            Адресаты письма на согласование
-            <HelpTooltip label="Почему адресатов нельзя изменить">
-              Получатели зафиксированы продуктовым правилом. Рекрутер и AI не могут их менять — изменить
-              состав может только Руководитель подбора или HRD в управлении платформой.
-            </HelpTooltip>
-          </h2>
-          <dl className="mt-3 flex flex-col gap-2 text-sm">
-            <div>
-              <dt className="text-xs font-medium uppercase tracking-wide text-muted">Кому</dt>
-              <dd className="text-foreground">Руководитель подбора, HRD</dd>
-            </div>
-            <div>
-              <dt className="text-xs font-medium uppercase tracking-wide text-muted">Копия — КДП</dt>
-              <dd className="text-foreground">Алена Алешова, Мария Комиссарова</dd>
-            </div>
-          </dl>
-        </div>
+    <div>
+      <Breadcrumbs items={[{ label: "Моя работа", href: "/" }, { label: "Центр офферов" }]} />
+      <h1 className="text-xl font-semibold text-foreground">Центр офферов</h1>
+      <p className="mt-1 max-w-3xl text-sm text-muted">
+        Заполните условия, проверьте одностраничный предпросмотр по визуальному шаблону Ivideon и
+        сохраните его в PDF через системную печать браузера.
+      </p>
+
+      <div className="mt-4 rounded-xl border border-warning/25 bg-warning-tint px-4 py-3 text-sm text-warning">
+        Это безопасный прототип на синтетических данных. Он пока не сохраняет офферы, не отправляет
+        письма и не подключён к Huntflow, Supabase или AI.
       </div>
-    </PlaceholderScreen>
+
+      <div className="mt-6">
+        <OfferCenterBuilder />
+      </div>
+    </div>
   );
 }

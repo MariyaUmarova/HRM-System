@@ -46,7 +46,8 @@ all generated material.
 - Участники.
 - Процесс завершён, когда.
 
-Navigation back must work by level: detail → workflow/section → home.
+Navigation back must work by level: detail → workflow/section → stage → full route →
+home.
 
 ## Offer approval
 
@@ -64,11 +65,17 @@ Navigation back must work by level: detail → workflow/section → home.
 - Every generated PDF/email must have an explicit version, author, timestamp and
   audit record. “Protected from unnoticed change” means the exact approved artifact
   can be traced and compared; it does not mean the user can never make a new version.
+- The product owner's 2026 Ivideon offer PDF is the current visual reference. The
+  filled source file and its personal data must not be committed; development and
+  previews use synthetic values only.
+- The current browser-print implementation is a testable prototype. Final pagination,
+  legal copy and brand fidelity require product-owner review before persistence or
+  automated delivery is connected.
 
 ## UX and content
 
 - Reduce visual noise; prefer calm layouts and progressive disclosure.
-- A `?` help marker remains visible while hovered or keyboard-focused and closes
+- A ? help marker remains visible while hovered or keyboard-focused and closes
   when the pointer/focus leaves. On touch it opens by tap and closes by outside tap.
 - Search must be predictable, typo-tolerant and keyboard-accessible.
 - Russian copy must be proofread; AI spelling correction is a future assistive

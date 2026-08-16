@@ -53,3 +53,36 @@ body {
   outline: 2px solid var(--brand);
   outline-offset: 2px;
 }
+
+@media print {
+  @page {
+    size: 148mm 263mm;
+    margin: 0;
+  }
+
+  body {
+    background: #ffffff;
+  }
+
+  body * {
+    visibility: hidden !important;
+  }
+
+  [data-offer-print],
+  [data-offer-print] * {
+    visibility: visible !important;
+  }
+
+  [data-offer-print] {
+    position: absolute !important;
+    inset: 0 auto auto 0 !important;
+    width: 148mm !important;
+    height: 263mm !important;
+    max-width: none !important;
+    overflow: hidden !important;
+    border-radius: 0 !important;
+    box-shadow: none !important;
+    print-color-adjust: exact;
+    -webkit-print-color-adjust: exact;
+  }
+}

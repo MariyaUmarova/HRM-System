@@ -5,16 +5,16 @@ service without the product owner's confirmation.
 
 ## Phase 0 — Make the project portable
 
-- [x] Create the private GitHub repository `MariyaUmarova/HRM-System`.
-- [x] Push the verified baseline to `main` (the repository had no application base
+- [x] Create the private GitHub repository MariyaUmarova/HRM-System.
+- [x] Push the verified baseline to main (the repository had no application base
   branch to target with a pull request).
-- [x] Enable CI for lint, 57 tests and build.
-- [ ] Protect `main` and require the CI check for future pull requests.
-- [ ] Choose a preview/production host and connect it to GitHub.
-- [ ] Record environments: local, preview, development and production.
+- [x] Enable CI for lint, tests and build.
+- [ ] Protect main and require the CI check for future pull requests.
+- [x] Connect Vercel to GitHub and publish browser-accessible previews.
+- [ ] Record environments: preview, development and production.
 
-Current status: Codex can open the source from GitHub on another authorized computer;
-the browser-accessible preview URL is still pending.
+Current status: the source is available in private GitHub and Vercel creates preview
+deployments for review branches.
 
 ## Phase 1 — Supabase foundation
 
@@ -52,6 +52,8 @@ Exit: integrations save clicks without duplicating Huntflow's ATS data model.
 
 ## Phase 4 — Offer Center
 
+- [x] Build a synthetic-data form, live one-page preview, explicit human check and
+  browser print/save-to-PDF prototype for product-owner testing.
 - Create versioned templates and role-task page support.
 - Parse a free-form recruiter brief into structured fields with a review screen.
 - Validate required fields and highlight uncertainty; never invent compensation or
