@@ -23,8 +23,11 @@ Handoff date: 2026-08-16.
   prefill, required human confirmation and direct PDF/PNG/PPTX downloads.
 - Offer payments support an optional introduction, combined recurring bonuses (including
   monthly) and a separate hourly KPI supplement; short task lists fit up to five cards per page.
-- Placeholder screens for interview analysis, HR radar and platform management.
-  They explicitly identify disconnected functionality.
+- Interactive Interview Analysis contract prototype with a synthetic source, vacancy
+  criteria, editable facts/conclusions/risks/questions, evidence links, a reviewable
+  Huntflow comment draft and mandatory human confirmation.
+- Placeholder screens for HR radar and platform management. They explicitly identify
+  disconnected functionality.
 - Typed adapter boundaries for future Huntflow and backend integrations.
 - Synthetic fixtures only; no real candidate, employee or vacancy records.
 - Automated guardrails for workflow order, role access, customer isolation,
@@ -58,6 +61,8 @@ Handoff date: 2026-08-16.
   not editable in this prototype.
 - Huntflow adapters intentionally expose single-object references only. Do not add
   vacancy or candidate list pages to this portal.
+- The Interview Analysis prototype is client-only and accepts only its supplied
+  synthetic example. It does not call AI, persist content or write to Huntflow.
 - Placeholder functionality must remain clearly marked until a real backend path is
   implemented and tested.
 - Historical Claude prompts in docs/CLAUDE_*.md describe earlier work. They are not
@@ -69,6 +74,6 @@ Handoff date: 2026-08-16.
     pnpm test
     pnpm build
 
-At handoff the expected result is: lint passes, 76 tests pass, and the production
+At handoff the expected result is: lint passes, 80 tests pass, and the production
 build succeeds. The receiving agent must rerun these checks and report the actual
 result before making material changes.

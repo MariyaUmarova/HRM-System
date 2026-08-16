@@ -69,6 +69,8 @@ Exit: the recruiter prepares a correct, reviewable approval package with minimal
 
 ## Phase 5 — Interview AI and search copilot
 
+- [x] Build a client-only contract prototype on synthetic data: evidence-linked facts,
+  conclusions, risks and questions, editable Huntflow draft and explicit human check.
 - Accept authorized interview material and apply retention/redaction rules.
 - Produce evidence-linked structured analysis with human approval.
 - Export the approved result to Huntflow.
