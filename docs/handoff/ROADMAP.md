@@ -18,6 +18,8 @@ deployments for review branches.
 
 ## Phase 1 — Supabase foundation
 
+- [x] Build the agreed invitation contract prototype: @ivideon.com only,
+  Recruiter/Customer roles, and department/position required for a Customer.
 - Create separate development and production Supabase projects.
 - Add Supabase CLI/config and versioned SQL migrations.
 - Implement Auth and server-side session validation.
@@ -83,6 +85,8 @@ content.
 
 ## Phase 6 — HR radar and knowledge operations
 
+- [x] Build a manually reviewed, attributed HR-news prototype with topic/text filters,
+  source links, saved items, freshness labels and explicit source-health notes.
 - Ingest permitted RSS/API/search sources. Respect source terms and copyright.
 - Deduplicate, classify, summarize and link to the source.
 - Use Perplexity/web search as a discovery layer, not as an unverified database.

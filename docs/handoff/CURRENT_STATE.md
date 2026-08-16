@@ -1,6 +1,6 @@
 # Current state at handoff
 
-Handoff date: 2026-08-16.
+Handoff date: 2026-08-17.
 
 ## Implemented
 
@@ -26,12 +26,16 @@ Handoff date: 2026-08-16.
 - Interactive Interview Analysis contract prototype with a synthetic source, vacancy
   criteria, editable facts/conclusions/risks/questions, evidence links, a reviewable
   Huntflow comment draft and mandatory human confirmation.
-- Placeholder screens for HR radar and platform management. They explicitly identify
-  disconnected functionality.
+- Interactive HR Radar with a manually reviewed, attributed public-source news set,
+  text/topic filters, per-tab saved items, freshness labels and source-control notes.
+- Interactive platform-management prototype for Head of Recruitment and HRD: exact
+  @ivideon.com validation, Recruiter/Customer invitation roles, required department
+  and position for Customers, and transparent client-only invitation drafts.
 - Typed adapter boundaries for future Huntflow and backend integrations.
 - Synthetic fixtures only; no real candidate, employee or vacancy records.
 - Automated guardrails for workflow order, role access, customer isolation,
-  knowledge integrity, search, requests, tooltips, profile header and offer review.
+  knowledge integrity, search, requests, tooltips, profile header, offer review,
+  interview review, attributed HR news and invitation rules.
 - Private GitHub source repository MariyaUmarova/HRM-System with the verified
   baseline on main and passing GitHub Actions CI.
 
@@ -63,6 +67,10 @@ Handoff date: 2026-08-16.
   vacancy or candidate list pages to this portal.
 - The Interview Analysis prototype is client-only and accepts only its supplied
   synthetic example. It does not call AI, persist content or write to Huntflow.
+- HR Radar currently uses a dated manual selection of public sources. It does not
+  ingest RSS, call Perplexity/AI or persist saved items.
+- Invitation preparation is client-only: it validates fields but does not send email,
+  create a Supabase Auth user or persist the entered corporate address.
 - Placeholder functionality must remain clearly marked until a real backend path is
   implemented and tested.
 - Historical Claude prompts in docs/CLAUDE_*.md describe earlier work. They are not
@@ -74,6 +82,6 @@ Handoff date: 2026-08-16.
     pnpm test
     pnpm build
 
-At handoff the expected result is: lint passes, 80 tests pass, and the production
+At handoff the expected result is: lint passes, 91 tests pass, and the production
 build succeeds. The receiving agent must rerun these checks and report the actual
 result before making material changes.

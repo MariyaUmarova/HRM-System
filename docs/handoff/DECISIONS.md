@@ -25,6 +25,11 @@ These decisions are durable unless the product owner explicitly changes them.
 - HRBP, General Director and HR Operations/KDP may participate in business processes
   without receiving portal accounts in the current scope.
 - Customers may access only their own request through an isolated protected surface.
+- Every internal user has a personal account; accounts are not shared.
+- Head of Recruitment and HRD may prepare invitations with the same permissions.
+- Invitations accept only corporate addresses in the exact @ivideon.com domain.
+- An invitation assigns either Recruiter or Customer. A Customer invitation also
+  requires the person's department and position.
 
 ## Exact workflow order
 
