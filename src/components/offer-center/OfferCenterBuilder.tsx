@@ -22,6 +22,7 @@ import {
   SCHEDULE_OPTIONS,
   TIME_OPTIONS,
   type BonusPeriod,
+  type OfferBonus,
   type OfferDraft,
   type OfferTask,
   type PayType,
@@ -171,6 +172,10 @@ function taskId() {
   return `task-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
 }
 
+function bonusId() {
+  return `bonus-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
+}
+
 export function OfferCenterBuilder() {
   const [draft, setDraft] = useState<OfferDraft>(INITIAL_DRAFT);
   const [selectedRequestId, setSelectedRequestId] = useState("");
@@ -200,6 +205,13 @@ export function OfferCenterBuilder() {
     updateField(
       "tasks",
       draft.tasks.map((item) => (item.id === id ? { ...item, ...patch } : item)),
+    );
+  };
+
+  const updateBonus = (id: string, patch: Partial<OfferBonus>) => {
+    updateField(
+      "bonuses",
+      draft.bonuses.map((item) => (item.id === id ? { ...item, ...patch } : item)),
     );
   };
 
@@ -529,10 +541,10 @@ export function OfferCenterBuilder() {
 
         <EditorSection title="Оплата труда">
           <TextAreaField
-            label="Основной блок"
+            label="Вводная строка (необязательно)"
             value={draft.incomeMain}
-            required
-            placeholder="Например: Совокупный доход состоит из"
+            placeholder="Например: Совокупный доход состоит из:"
+            note="Можно оставить предложенный текст, заменить его или удалить — строка не обязательна."
             onChange={(value) => updateField("incomeMain", value)}
           />
 
@@ -554,37 +566,103 @@ export function OfferCenterBuilder() {
                 placeholder="Введите сумму"
                 onChange={(value) => updateField("payAmount", value)}
               />
+              {draft.payType === "hourly" ? (
+                <div className="sm:col-span-2">
+                  <TextField
+                    label="KPI-доплата за час (необязательно)"
+                    value={draft.hourlyKpiAmount}
+                    placeholder="Например: 50"
+                    onChange={(value) => updateField("hourlyKpiAmount", value)}
+                  />
+                  <p className="mt-1 text-xs text-muted">
+                    Отдельная доплата к часовой ставке при выполнении KPI.
+                  </p>
+                </div>
+              ) : null}
             </div>
           </div>
 
           <div className={GROUP_CLASS}>
-            <h3 className="text-sm font-semibold text-foreground">Бонус</h3>
-            <div className="mt-3 grid gap-4 sm:grid-cols-2">
-              <SelectField<BonusPeriod>
-                label="Периодичность бонуса"
-                value={draft.bonusPeriod}
-                onChange={(value) => updateField("bonusPeriod", value)}
+            <div className="flex flex-wrap items-center justify-between gap-3">
+              <div>
+                <h3 className="text-sm font-semibold text-foreground">Бонусы</h3>
+                <p className="mt-1 text-xs text-muted">
+                  Можно добавить несколько бонусов с разной периодичностью.
+                </p>
+              </div>
+              <Button
+                type="button"
+                variant="secondary"
+                onClick={() =>
+                  updateField("bonuses", [
+                    ...draft.bonuses,
+                    { id: bonusId(), period: "", periodOther: "", amount: "" },
+                  ])
+                }
               >
-                <option value="">Не добавлять блок</option>
-                <option value="Квартальный">Квартальный</option>
-                <option value="Полугодовой">Полугодовой</option>
-                <option value="Годовой">Годовой</option>
-                <option value="other">Другое</option>
-              </SelectField>
-              {draft.bonusPeriod === "other" ? (
-                <TextField
-                  label="Другая периодичность"
-                  value={draft.bonusPeriodOther}
-                  onChange={(value) => updateField("bonusPeriodOther", value)}
-                />
-              ) : null}
-              <TextField
-                label="Сумма бонуса"
-                value={draft.bonusAmount}
-                placeholder="Введите сумму"
-                onChange={(value) => updateField("bonusAmount", value)}
-              />
+                + Добавить бонус
+              </Button>
             </div>
+
+            {draft.bonuses.length === 0 ? (
+              <p className="mt-3 text-sm text-muted">Бонусы не добавлены.</p>
+            ) : (
+              <div className="mt-3 space-y-3">
+                {draft.bonuses.map((bonus, index) => (
+                  <div
+                    className="rounded-lg border border-border bg-surface p-3"
+                    key={bonus.id}
+                  >
+                    <div className="mb-3 flex items-center justify-between gap-3">
+                      <h4 className="text-sm font-semibold text-foreground">
+                        Бонус {index + 1}
+                      </h4>
+                      <Button
+                        type="button"
+                        variant="secondary"
+                        onClick={() =>
+                          updateField(
+                            "bonuses",
+                            draft.bonuses.filter((item) => item.id !== bonus.id),
+                          )
+                        }
+                      >
+                        Удалить
+                      </Button>
+                    </div>
+                    <div className="grid gap-4 sm:grid-cols-2">
+                      <SelectField<BonusPeriod>
+                        label={`Периодичность бонуса ${index + 1}`}
+                        value={bonus.period}
+                        onChange={(value) => updateBonus(bonus.id, { period: value })}
+                      >
+                        <option value="">Не добавлять блок</option>
+                        <option value="Ежемесячный">Ежемесячный</option>
+                        <option value="Квартальный">Квартальный</option>
+                        <option value="Полугодовой">Полугодовой</option>
+                        <option value="Годовой">Годовой</option>
+                        <option value="other">Другое</option>
+                      </SelectField>
+                      {bonus.period === "other" ? (
+                        <TextField
+                          label={`Другая периодичность бонуса ${index + 1}`}
+                          value={bonus.periodOther}
+                          onChange={(value) =>
+                            updateBonus(bonus.id, { periodOther: value })
+                          }
+                        />
+                      ) : null}
+                      <TextField
+                        label={`Сумма бонуса ${index + 1}`}
+                        value={bonus.amount}
+                        placeholder="Введите сумму"
+                        onChange={(value) => updateBonus(bonus.id, { amount: value })}
+                      />
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
           </div>
 
           <TextAreaField

@@ -58,11 +58,14 @@
   left: 29px;
   right: 29px;
   top: 221px;
-  bottom: 214px;
+  bottom: 210px;
+  display: flex;
+  flex-direction: column;
   overflow: hidden;
 }
 
 .hello {
+  flex: 0 0 auto;
   margin: 0 0 6px;
   font-size: 31px;
   font-weight: 800;
@@ -70,43 +73,50 @@
 }
 
 .intro {
+  flex: 0 0 auto;
   margin-bottom: 8px;
   font-size: 16px;
   line-height: 1.2;
 }
 
 .rolePill {
-  display: inline-block;
+  display: inline-flex;
+  flex: 0 0 auto;
   min-width: 235px;
   max-width: 410px;
+  min-height: 29px;
+  align-self: flex-start;
+  align-items: center;
+  justify-content: center;
   padding: 4px 12px;
-  overflow: hidden;
+  overflow-wrap: anywhere;
   border-radius: 18px;
   background: linear-gradient(90deg, var(--offer-blue), var(--offer-blue-light));
   color: #ffffff;
   font-size: 16px;
-  line-height: 1.25;
+  line-height: 1.2;
   text-align: center;
-  text-overflow: ellipsis;
-  white-space: nowrap;
+  white-space: normal;
 }
 
 .sectionTitle {
-  margin: 22px 0 14px;
-  font-size: 29px;
+  flex: 0 0 auto;
+  margin: 16px 0 10px;
+  font-size: 28px;
   font-weight: 800;
   line-height: 1.08;
 }
 
 .infoGrid {
   display: grid;
+  flex: 0 0 auto;
   grid-template-columns: 1fr 1fr;
   column-gap: 38px;
-  row-gap: 20px;
+  row-gap: 16px;
 }
 
 .info {
-  min-height: 68px;
+  min-height: 64px;
 }
 
 .label {
@@ -134,25 +144,28 @@
 }
 
 .payLabel {
-  margin-top: 15px;
+  flex: 0 0 auto;
+  margin-top: 10px;
   margin-bottom: 4px;
 }
 
 .payBox {
-  min-height: 42px;
+  min-height: 38px;
+  flex: 0 0 auto;
+  margin-bottom: 8px;
   overflow: hidden;
   border: 1px solid var(--offer-line);
   border-radius: 15px;
   background: var(--offer-pale);
-  padding: 5px 14px 6px;
+  padding: 4px 14px 5px;
 }
 
 .payRow {
-  padding: 5px 0;
+  padding: 2px 0;
   overflow-wrap: anywhere;
   color: var(--offer-ink);
-  font-size: 12.4px;
-  line-height: 1.2;
+  font-size: 11.5px;
+  line-height: 1.13;
   white-space: pre-line;
 }
 
@@ -162,27 +175,26 @@
 
 .payRowMain {
   color: var(--offer-blue);
-  font-size: 13.2px;
+  font-size: 12.4px;
   font-weight: 700;
 }
 
 .benefits {
-  position: absolute;
-  left: 0;
-  right: 0;
-  bottom: 4px;
+  position: static;
   display: grid;
+  min-height: 36px;
+  flex: 0 0 auto;
   grid-template-columns: auto auto auto;
   align-items: center;
   justify-content: start;
-  gap: 12px;
-  min-height: 42px;
+  gap: 10px;
+  margin-top: auto;
   border: 1.5px solid var(--offer-blue);
   border-radius: 18px;
-  padding: 6px 12px;
+  padding: 4px 10px;
   color: var(--offer-ink);
-  font-size: 12.5px;
-  line-height: 1.2;
+  font-size: 12px;
+  line-height: 1.15;
   white-space: nowrap;
 }
 
@@ -191,7 +203,7 @@
   align-items: baseline;
   gap: 6px;
   color: #526784;
-  font-size: 12.5px;
+  font-size: 12px;
   font-weight: 400;
 }
 
@@ -203,7 +215,7 @@
 
 .plus {
   color: var(--offer-blue);
-  font-size: 19px;
+  font-size: 18px;
   font-weight: 500;
   line-height: 1;
 }

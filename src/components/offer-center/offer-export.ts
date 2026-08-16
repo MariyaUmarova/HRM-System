@@ -223,25 +223,36 @@ function drawRolePill(
   text: string,
   x: number,
   y: number,
-  width: number,
-  height: number,
+  minWidth: number,
+  maxWidth: number,
   font: string,
-): void {
+  lineHeight: number,
+): number {
+  const content = text.trim() || "[Должность]";
+  context.font = font;
+  const lines = wrapCanvasText(context, content, maxWidth - 28);
+  const measuredWidth = Math.max(...lines.map((line) => context.measureText(line).width));
+  const width = Math.min(maxWidth, Math.max(minWidth, measuredWidth + 28));
+  const height = Math.max(29, lines.length * lineHeight + 10);
+  const radius = Math.min(18, height / 2);
   const gradient = context.createLinearGradient(x, y, x + width, y);
   gradient.addColorStop(0, BLUE);
   gradient.addColorStop(1, BLUE_LIGHT);
-  roundedRect(context, x, y, width, height, height / 2);
+  roundedRect(context, x, y, width, height, radius);
   context.fillStyle = gradient;
   context.fill();
   context.save();
-  roundedRect(context, x, y, width, height, height / 2);
+  roundedRect(context, x, y, width, height, radius);
   context.clip();
   context.fillStyle = "#ffffff";
   context.font = font;
   context.textAlign = "center";
-  context.fillText(text || "[Должность]", x + width / 2, y + 5, width - 20);
+  lines.forEach((line, index) => {
+    context.fillText(line, x + width / 2, y + 5 + index * lineHeight);
+  });
   context.restore();
   context.textAlign = "left";
+  return height;
 }
 
 function drawInfoBlock(
@@ -286,16 +297,21 @@ function drawFirstPage(
   context.font = "16px Arial, Helvetica, sans-serif";
   context.fillText("Мы приглашаем тебя в команду ivideon на позицию", 29, 258);
 
-  const roleWidth = Math.min(410, Math.max(235, context.measureText(draft.position).width + 30));
-  drawRolePill(
+  const roleHeight = drawRolePill(
     context,
     draft.position.trim() || "[Должность]",
     29,
     284,
-    roleWidth,
-    29,
+    235,
+    410,
     "16px Arial, Helvetica, sans-serif",
+    19,
   );
+  if (roleHeight > 48) {
+    throw new Error(
+      "Должность не помещается в шапке без наложений. Сократите название до двух строк.",
+    );
+  }
 
   context.fillStyle = INK;
   context.font = "800 29px Arial, Helvetica, sans-serif";
@@ -330,7 +346,7 @@ function drawFirstPage(
     wrapCanvasText(context, manager, 210).length,
   );
   const payLabelY = calculatePaymentLabelY(secondRowLineCount);
-  const payBoxY = payLabelY + 29;
+  const payBoxY = payLabelY + 27;
 
   drawInfoBlock(
     context,
@@ -356,15 +372,16 @@ function drawFirstPage(
   const rows = getPaymentRows(draft);
   const rowLineCounts = rows.map((row) => {
     context.font = row.main
-      ? "700 13.2px Arial, Helvetica, sans-serif"
-      : "12.4px Arial, Helvetica, sans-serif";
+      ? "700 12.4px Arial, Helvetica, sans-serif"
+      : "11.5px Arial, Helvetica, sans-serif";
     return wrapCanvasText(context, row.text, 471).length;
   });
   const payHeight =
-    12 +
-    rowLineCounts.reduce((sum, count) => sum + Math.max(16, count * 15) + 10, 0);
+    10 +
+    rowLineCounts.reduce((sum, count) => sum + Math.max(13, count * 13) + 4, 0);
   const payBottom = payBoxY + payHeight;
-  if (payBottom > 743) {
+  const benefitsY = Math.max(763, payBottom + 8);
+  if (benefitsY + 36 > 803) {
     throw new Error(
       "Текст первой страницы не помещается без наложений. Сократите формат работы или условия оплаты.",
     );
@@ -382,42 +399,42 @@ function drawFirstPage(
   context.lineWidth = 1;
   context.stroke();
 
-  let rowY = payBoxY + 7;
+  let rowY = payBoxY + 5;
   rows.forEach((row, index) => {
     if (index > 0) {
       context.strokeStyle = "#bdd6f7";
       context.beginPath();
-      context.moveTo(43, rowY - 5);
-      context.lineTo(526, rowY - 5);
+      context.moveTo(43, rowY - 2);
+      context.lineTo(526, rowY - 2);
       context.stroke();
     }
     context.fillStyle = row.main ? BLUE : INK;
     context.font = row.main
-      ? "700 13.2px Arial, Helvetica, sans-serif"
-      : "12.4px Arial, Helvetica, sans-serif";
-    const height = drawWrappedText(context, row.text, 43, rowY, 471, 15);
-    rowY += Math.max(16, height) + 10;
+      ? "700 12.4px Arial, Helvetica, sans-serif"
+      : "11.5px Arial, Helvetica, sans-serif";
+    const height = drawWrappedText(context, row.text, 43, rowY, 471, 13);
+    rowY += Math.max(13, height) + 4;
   });
 
-  roundedRect(context, 29, 753, 511, 42, 18);
+  roundedRect(context, 29, benefitsY, 511, 36, 18);
   context.strokeStyle = BLUE;
   context.lineWidth = 1.5;
   context.stroke();
   context.fillStyle = INK;
-  context.font = "700 12.5px Arial, Helvetica, sans-serif";
-  context.fillText("ДМС", 42, 766);
+  context.font = "700 12px Arial, Helvetica, sans-serif";
+  context.fillText("ДМС", 40, benefitsY + 11);
   context.fillStyle = "#526784";
-  context.font = "12.5px Arial, Helvetica, sans-serif";
-  context.fillText("Страховая компания «Лучи»", 76, 766);
+  context.font = "12px Arial, Helvetica, sans-serif";
+  context.fillText("Страховая компания «Лучи»", 73, benefitsY + 11);
   context.fillStyle = BLUE;
-  context.font = "500 19px Arial, Helvetica, sans-serif";
-  context.fillText("+", 239, 761);
+  context.font = "500 18px Arial, Helvetica, sans-serif";
+  context.fillText("+", 232, benefitsY + 7);
   context.fillStyle = INK;
-  context.font = "700 12.5px Arial, Helvetica, sans-serif";
-  context.fillText("Английский язык", 266, 766);
+  context.font = "700 12px Arial, Helvetica, sans-serif";
+  context.fillText("Английский язык", 257, benefitsY + 11);
   context.fillStyle = "#526784";
-  context.font = "12.5px Arial, Helvetica, sans-serif";
-  context.fillText("SkyEng", 382, 766);
+  context.font = "12px Arial, Helvetica, sans-serif";
+  context.fillText("SkyEng", 370, benefitsY + 11);
 
   context.drawImage(assets["pattern-large.png"], 0, 804, PAGE_WIDTH, 209);
   context.fillStyle = "#ffffff";
@@ -522,6 +539,7 @@ function drawTaskPage(
   draft: OfferDraft,
   tasks: OfferTask[],
   pageIndex: number,
+  precedingCount: number,
   assets: Record<AssetName, HTMLImageElement>,
 ): HTMLCanvasElement {
   const { canvas, context } = createPageCanvas();
@@ -552,18 +570,17 @@ function drawTaskPage(
     y += subtitleHeight + 14;
   }
   if (pageIndex === 0) {
-    context.font = "15px Arial, Helvetica, sans-serif";
-    const roleWidth = Math.min(390, Math.max(255, context.measureText(draft.position).width + 32));
-    drawRolePill(
+    const roleHeight = drawRolePill(
       context,
       draft.position.trim() || "[Должность]",
       34,
       y,
-      roleWidth,
-      29,
+      255,
+      390,
       "15px Arial, Helvetica, sans-serif",
+      18,
     );
-    y += 54;
+    y += roleHeight + 25;
   }
 
   tasks.forEach((item, index) => {
@@ -573,7 +590,7 @@ function drawTaskPage(
         "Задачи не помещаются на странице без наложений. Сократите текст задачи или ожидаемого результата.",
       );
     }
-    y += drawTaskCard(context, item, pageIndex * 4 + index + 1, y) + 10;
+    y += drawTaskCard(context, item, precedingCount + index + 1, y) + 10;
   });
 
   context.drawImage(assets["pattern-large.png"], 0, 921, PAGE_WIDTH, 92);
@@ -584,8 +601,10 @@ async function renderPages(draft: OfferDraft): Promise<HTMLCanvasElement[]> {
   await document.fonts?.ready;
   const assets = await loadAssets();
   const canvases = [drawFirstPage(draft, assets)];
+  let precedingCount = 0;
   getOfferPages(draft).forEach((tasks, pageIndex) => {
-    canvases.push(drawTaskPage(draft, tasks, pageIndex, assets));
+    canvases.push(drawTaskPage(draft, tasks, pageIndex, precedingCount, assets));
+    precedingCount += tasks.length;
   });
   return canvases;
 }

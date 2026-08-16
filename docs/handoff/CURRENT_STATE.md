@@ -21,6 +21,8 @@ Handoff date: 2026-08-16.
 - Offer Center prototype with the supplied field model, conditional selects and weekdays,
   fixed first and task pages, optional expected results, assigned-request position/department
   prefill, required human confirmation and direct PDF/PNG/PPTX downloads.
+- Offer payments support an optional introduction, combined recurring bonuses (including
+  monthly) and a separate hourly KPI supplement; short task lists fit up to five cards per page.
 - Placeholder screens for interview analysis, HR radar and platform management.
   They explicitly identify disconnected functionality.
 - Typed adapter boundaries for future Huntflow and backend integrations.
@@ -67,6 +69,6 @@ Handoff date: 2026-08-16.
     pnpm test
     pnpm build
 
-At handoff the expected result is: lint passes, 72 tests pass, and the production
+At handoff the expected result is: lint passes, 76 tests pass, and the production
 build succeeds. The receiving agent must rerun these checks and report the actual
 result before making material changes.

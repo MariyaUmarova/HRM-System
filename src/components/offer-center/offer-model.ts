@@ -10,13 +10,26 @@ export type TimeValue =
   | "20:00–08:00"
   | "other";
 export type PayType = "" | "salary" | "hourly";
-export type BonusPeriod = "" | "Квартальный" | "Полугодовой" | "Годовой" | "other";
+export type BonusPeriod =
+  | ""
+  | "Ежемесячный"
+  | "Квартальный"
+  | "Полугодовой"
+  | "Годовой"
+  | "other";
 export type OfficeDay = "Понедельник" | "Вторник" | "Среда" | "Четверг" | "Пятница";
 
 export interface OfferTask {
   id: string;
   task: string;
   result: string;
+}
+
+export interface OfferBonus {
+  id: string;
+  period: BonusPeriod;
+  periodOther: string;
+  amount: string;
 }
 
 export interface OfferDraft {
@@ -43,9 +56,8 @@ export interface OfferDraft {
   incomeMain: string;
   payType: PayType;
   payAmount: string;
-  bonusPeriod: BonusPeriod;
-  bonusPeriodOther: string;
-  bonusAmount: string;
+  hourlyKpiAmount: string;
+  bonuses: OfferBonus[];
   incomeComp: string;
   tasksSubtitle: string;
   tasks: OfferTask[];
@@ -106,9 +118,15 @@ export const INITIAL_DRAFT: OfferDraft = {
   incomeMain: "Совокупный доход состоит из:",
   payType: "salary",
   payAmount: "000 000",
-  bonusPeriod: "Полугодовой",
-  bonusPeriodOther: "",
-  bonusAmount: "000 000",
+  hourlyKpiAmount: "",
+  bonuses: [
+    {
+      id: "bonus-1",
+      period: "Полугодовой",
+      periodOther: "",
+      amount: "000 000",
+    },
+  ],
   incomeComp: "",
   tasksSubtitle: "Задачи и ожидаемые результаты на испытательный срок",
   tasks: [
@@ -182,11 +200,27 @@ export function getPaymentRows(draft: OfferDraft): PaymentRow[] {
     });
   }
 
-  const period =
-    draft.bonusPeriod === "other" ? draft.bonusPeriodOther.trim() : draft.bonusPeriod;
-  if (period && draft.bonusAmount.trim()) {
+  if (draft.payType === "hourly" && draft.hourlyKpiAmount.trim()) {
     rows.push({
-      text: `${period} бонус до ${draft.bonusAmount.trim()} рублей до вычета НДФЛ\nпри 100% выполнении KPI согласно корпоративной политике компании.`,
+      text: `Доплата за выполнение KPI: ${draft.hourlyKpiAmount.trim()} рублей за час`,
+    });
+  }
+
+  const bonusRows = draft.bonuses
+    .map((bonus) => ({
+      period: bonus.period === "other" ? bonus.periodOther.trim() : bonus.period,
+      amount: bonus.amount.trim(),
+    }))
+    .filter((bonus) => bonus.period && bonus.amount);
+
+  bonusRows.forEach((bonus) => {
+    rows.push({
+      text: `${bonus.period} бонус до ${bonus.amount} рублей до вычета НДФЛ`,
+    });
+  });
+  if (bonusRows.length > 0) {
+    rows.push({
+      text: "Бонусы выплачиваются при 100% выполнении KPI согласно корпоративной политике компании.",
     });
   }
 
@@ -194,14 +228,60 @@ export function getPaymentRows(draft: OfferDraft): PaymentRow[] {
   return rows;
 }
 
+function estimateLines(text: string, charactersPerLine: number): number {
+  return String(text || "")
+    .split("\n")
+    .reduce(
+      (sum, paragraph) =>
+        sum + Math.max(1, Math.ceil(paragraph.trim().length / charactersPerLine)),
+      0,
+    );
+}
+
+function estimateTaskHeight(task: OfferTask): number {
+  const taskLines = estimateLines(task.task.trim(), 55);
+  const resultLines = task.result.trim() ? estimateLines(task.result.trim(), 60) : 0;
+  if (resultLines > 0) return 100 + taskLines * 18 + resultLines * 17;
+  return Math.max(88, 58 + taskLines * 18);
+}
+
+function taskPageStartY(draft: OfferDraft, pageIndex: number): number {
+  let y = 148;
+  if (pageIndex === 0 && draft.tasksSubtitle.trim()) {
+    y += estimateLines(draft.tasksSubtitle.trim(), 65) * 19 + 14;
+  }
+  if (pageIndex === 0) {
+    const roleLines = estimateLines(draft.position.trim() || "[Должность]", 48);
+    const roleHeight = Math.max(29, roleLines * 18 + 10);
+    y += roleHeight + 25;
+  }
+  return y;
+}
+
 export function getOfferPages(draft: OfferDraft): OfferTask[][] {
   const tasks = draft.tasks.filter((item) => item.task.trim());
   if (tasks.length === 0) return [[]];
 
   const pages: OfferTask[][] = [];
-  for (let index = 0; index < tasks.length; index += 4) {
-    pages.push(tasks.slice(index, index + 4));
-  }
+  let current: OfferTask[] = [];
+  let usedHeight = 0;
+  let pageIndex = 0;
+
+  tasks.forEach((task) => {
+    const cardHeight = estimateTaskHeight(task);
+    const nextHeight = usedHeight + (current.length > 0 ? 10 : 0) + cardHeight;
+    const capacity = 911 - taskPageStartY(draft, pageIndex);
+    if (current.length > 0 && (current.length >= 5 || nextHeight > capacity)) {
+      pages.push(current);
+      current = [];
+      usedHeight = 0;
+      pageIndex += 1;
+    }
+    usedHeight += (current.length > 0 ? 10 : 0) + cardHeight;
+    current.push(task);
+  });
+
+  if (current.length > 0) pages.push(current);
   return pages;
 }
 
@@ -218,7 +298,6 @@ export function getMissingFields(draft: OfferDraft): string[] {
     [draft.manager, "руководитель"],
     [draft.managerRole, "должность руководителя"],
     [draft.answerDate, "срок ответа"],
-    [draft.incomeMain, "основной блок оплаты"],
   ];
   required.forEach(([value, label]) => {
     if (!value.trim()) missing.push(label);
@@ -251,11 +330,16 @@ export function getMissingFields(draft: OfferDraft): string[] {
   }
   if (draft.payType && !draft.payAmount.trim()) missing.push("сумма оплаты");
   if (!draft.payType && draft.payAmount.trim()) missing.push("тип оплаты");
-  if (draft.bonusPeriod && !draft.bonusAmount.trim()) missing.push("сумма бонуса");
-  if (!draft.bonusPeriod && draft.bonusAmount.trim()) missing.push("периодичность бонуса");
-  if (draft.bonusPeriod === "other" && !draft.bonusPeriodOther.trim()) {
-    missing.push("другая периодичность бонуса");
-  }
+  draft.bonuses.forEach((bonus, index) => {
+    const number = index + 1;
+    if (bonus.period && !bonus.amount.trim()) missing.push(`сумма бонуса ${number}`);
+    if (!bonus.period && bonus.amount.trim()) {
+      missing.push(`периодичность бонуса ${number}`);
+    }
+    if (bonus.period === "other" && !bonus.periodOther.trim()) {
+      missing.push(`другая периодичность бонуса ${number}`);
+    }
+  });
 
   const hasTask = draft.tasks.some((item) => item.task.trim());
   if (!hasTask) missing.push("минимум одна задача");

@@ -12,6 +12,7 @@ import {
 import {
   getMissingFields,
   getOfferPages,
+  getPaymentRows,
   INITIAL_DRAFT,
   type OfferDraft,
 } from "@/components/offer-center/offer-model";
@@ -36,6 +37,12 @@ describe("offer model", () => {
     expect(getMissingFields(INITIAL_DRAFT)).not.toContain("ожидаемый результат");
   });
 
+  it("treats the payment introduction as optional", () => {
+    expect(getMissingFields({ ...INITIAL_DRAFT, incomeMain: "" })).not.toContain(
+      "основной блок оплаты",
+    );
+  });
+
   it("requires a task only when a result was entered for it", () => {
     const draft: OfferDraft = {
       ...INITIAL_DRAFT,
@@ -46,16 +53,52 @@ describe("offer model", () => {
     );
   });
 
-  it("creates continuation pages without changing task content", () => {
+  it("keeps five short tasks on the second offer page", () => {
     const draft: OfferDraft = {
       ...INITIAL_DRAFT,
-      tasks: Array.from({ length: 5 }, (_, index) => ({
+      tasks: Array.from({ length: 6 }, (_, index) => ({
         id: `task-${index}`,
         task: `Задача ${index + 1}`,
         result: "",
       })),
     };
-    expect(getOfferPages(draft).map((page) => page.length)).toEqual([4, 1]);
+    expect(getOfferPages(draft).map((page) => page.length)).toEqual([5, 1]);
+  });
+
+  it("combines monthly and annual bonuses in separate payment rows", () => {
+    const rows = getPaymentRows({
+      ...INITIAL_DRAFT,
+      incomeMain: "",
+      bonuses: [
+        { id: "monthly", period: "Ежемесячный", periodOther: "", amount: "10 000" },
+        { id: "annual", period: "Годовой", periodOther: "", amount: "120 000" },
+      ],
+    });
+    expect(rows.map((row) => row.text)).toEqual([
+      "Оклад 000 000 рублей в месяц до вычета НДФЛ",
+      "Ежемесячный бонус до 10 000 рублей до вычета НДФЛ",
+      "Годовой бонус до 120 000 рублей до вычета НДФЛ",
+      "Бонусы выплачиваются при 100% выполнении KPI согласно корпоративной политике компании.",
+    ]);
+  });
+
+  it("adds an hourly KPI payment separately from a monthly bonus", () => {
+    const rows = getPaymentRows({
+      ...INITIAL_DRAFT,
+      incomeMain: "",
+      payType: "hourly",
+      payAmount: "290",
+      hourlyKpiAmount: "50",
+      bonuses: [
+        { id: "monthly", period: "Ежемесячный", periodOther: "", amount: "10 000" },
+      ],
+    });
+    expect(rows.map((row) => row.text)).toContain(
+      "Доплата за выполнение KPI: 50 рублей за час",
+    );
+    expect(rows.map((row) => row.text)).toContain(
+      "Ежемесячный бонус до 10 000 рублей до вычета НДФЛ",
+    );
   });
 });
 
@@ -151,6 +194,22 @@ describe("OfferCenterBuilder", () => {
     expect(screen.getByRole("textbox", { name: "Имя кандидата" })).toHaveValue("Алексей");
   });
 
+  it("adds a second monthly bonus without replacing the existing bonus", async () => {
+    const user = userEvent.setup();
+    render(<OfferCenterBuilder />);
+
+    await user.click(screen.getByRole("button", { name: "+ Добавить бонус" }));
+    await user.selectOptions(
+      screen.getByLabelText("Периодичность бонуса 2"),
+      "Ежемесячный",
+    );
+    await user.type(screen.getByLabelText("Сумма бонуса 2"), "10 000");
+
+    const firstPage = screen.getByLabelText("Предпросмотр оффера, страница 1");
+    expect(firstPage).toHaveTextContent("Полугодовой бонус");
+    expect(firstPage).toHaveTextContent("Ежемесячный бонус");
+  });
+
   it("requires a human check before enabling every export", async () => {
     const user = userEvent.setup();
     render(<OfferCenterBuilder />);
@@ -173,21 +232,20 @@ describe("OfferCenterBuilder", () => {
     expect(pptx).toBeEnabled();
   });
 
-  it("blocks export and identifies a missing required field", () => {
+  it("allows export when the optional payment introduction is empty", () => {
     render(<OfferCenterBuilder />);
 
-    fireEvent.change(screen.getByRole("textbox", { name: "Основной блок" }), {
-      target: { value: "" },
-    });
+    fireEvent.change(
+      screen.getByRole("textbox", { name: "Вводная строка (необязательно)" }),
+      { target: { value: "" } },
+    );
     fireEvent.click(
       screen.getByRole("checkbox", {
         name: /Я проверил\(а\) все страницы, даты, формат работы, оплату и задачи/,
       }),
     );
 
-    expect(screen.getByRole("button", { name: "Скачать PDF" })).toBeDisabled();
-    expect(screen.getByRole("status")).toHaveTextContent(
-      "Осталось заполнить: основной блок оплаты.",
-    );
+    expect(screen.getByRole("button", { name: "Скачать PDF" })).toBeEnabled();
+    expect(screen.getByRole("status")).toHaveTextContent("Оффер проверен");
   });
 });

@@ -206,12 +206,13 @@ function TaskPage({
   draft,
   tasks,
   pageIndex,
+  precedingCount,
 }: {
   draft: OfferDraft;
   tasks: OfferTask[];
   pageIndex: number;
+  precedingCount: number;
 }) {
-  const precedingCount = pageIndex * 4;
   return (
     <section
       className={`${styles.offerPage} ${styles.taskPage}`}
@@ -288,6 +289,9 @@ export function OfferPages({ draft }: { draft: OfferDraft }) {
           draft={draft}
           tasks={tasks}
           pageIndex={pageIndex}
+          precedingCount={taskPages
+            .slice(0, pageIndex)
+            .reduce((sum, page) => sum + page.length, 0)}
           key={tasks.map((item) => item.id).join("-") || `empty-${pageIndex}`}
         />
       ))}
