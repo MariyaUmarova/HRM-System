@@ -263,6 +263,12 @@ function drawInfoBlock(
   drawWrappedText(context, value || "—", x + 28, y + 31, width - 28, 18);
 }
 
+export function calculatePaymentLabelY(secondRowLineCount: number): number {
+  const secondRowBottom =
+    470 + 31 + Math.max(1, secondRowLineCount) * 18;
+  return Math.max(576, secondRowBottom + 14);
+}
+
 function drawFirstPage(
   draft: OfferDraft,
   assets: Record<AssetName, HTMLImageElement>,
@@ -315,12 +321,23 @@ function drawFirstPage(
     383,
     238,
   );
+  const workFormat = buildWorkFormat(draft);
+  const manager = `${draft.manager.trim() || "—"}\n${draft.managerRole.trim() || "—"}`;
+
+  context.font = "14px Arial, Helvetica, sans-serif";
+  const secondRowLineCount = Math.max(
+    wrapCanvasText(context, workFormat, 207).length,
+    wrapCanvasText(context, manager, 210).length,
+  );
+  const payLabelY = calculatePaymentLabelY(secondRowLineCount);
+  const payBoxY = payLabelY + 29;
+
   drawInfoBlock(
     context,
     assets,
     "icon-format.png",
     "Формат",
-    buildWorkFormat(draft),
+    workFormat,
     29,
     470,
     235,
@@ -330,16 +347,11 @@ function drawFirstPage(
     assets,
     "icon-manager.png",
     "Руководитель",
-    `${draft.manager.trim() || "—"}\n${draft.managerRole.trim() || "—"}`,
+    manager,
     302,
     470,
     238,
   );
-
-  context.drawImage(assets["icon-pay.png"], 29, 576, 22, 22);
-  context.fillStyle = MUTED;
-  context.font = "13px Arial, Helvetica, sans-serif";
-  context.fillText("Оплата труда", 59, 579);
 
   const rows = getPaymentRows(draft);
   const rowLineCounts = rows.map((row) => {
@@ -351,14 +363,26 @@ function drawFirstPage(
   const payHeight =
     12 +
     rowLineCounts.reduce((sum, count) => sum + Math.max(16, count * 15) + 10, 0);
-  roundedRect(context, 29, 605, 511, payHeight, 15);
+  const payBottom = payBoxY + payHeight;
+  if (payBottom > 743) {
+    throw new Error(
+      "Текст первой страницы не помещается без наложений. Сократите формат работы или условия оплаты.",
+    );
+  }
+
+  context.drawImage(assets["icon-pay.png"], 29, payLabelY, 22, 22);
+  context.fillStyle = MUTED;
+  context.font = "13px Arial, Helvetica, sans-serif";
+  context.fillText("Оплата труда", 59, payLabelY + 3);
+
+  roundedRect(context, 29, payBoxY, 511, payHeight, 15);
   context.fillStyle = PALE;
   context.fill();
   context.strokeStyle = LINE;
   context.lineWidth = 1;
   context.stroke();
 
-  let rowY = 612;
+  let rowY = payBoxY + 7;
   rows.forEach((row, index) => {
     if (index > 0) {
       context.strokeStyle = "#bdd6f7";
@@ -501,19 +525,19 @@ function drawTaskPage(
   assets: Record<AssetName, HTMLImageElement>,
 ): HTMLCanvasElement {
   const { canvas, context } = createPageCanvas();
-  context.drawImage(assets["pattern-small.png"], 0, 0, PAGE_WIDTH, 58);
-  context.drawImage(assets["logo.png"], 24, 14, 104, 22);
+  context.drawImage(assets["pattern-small.png"], 0, 0, PAGE_WIDTH, 84);
+  context.drawImage(assets["logo.png"], 28, 20, 150, 32);
   context.fillStyle = "#ffffff";
-  context.font = "800 10px Arial, Helvetica, sans-serif";
+  context.font = "800 11px Arial, Helvetica, sans-serif";
   context.textAlign = "right";
-  context.fillText("JOB OFFER", 545, 18);
+  context.fillText("JOB OFFER", 541, 29);
   context.textAlign = "left";
 
   context.fillStyle = INK;
   context.font = "800 29px Arial, Helvetica, sans-serif";
-  context.fillText(pageIndex === 0 ? "Твои задачи" : "Твои задачи — продолжение", 34, 79);
+  context.fillText(pageIndex === 0 ? "Твои задачи" : "Твои задачи — продолжение", 34, 108);
 
-  let y = 119;
+  let y = 148;
   if (pageIndex === 0 && draft.tasksSubtitle.trim()) {
     context.fillStyle = "#526784";
     context.font = "14px Arial, Helvetica, sans-serif";
@@ -543,10 +567,16 @@ function drawTaskPage(
   }
 
   tasks.forEach((item, index) => {
+    const cardHeight = taskCardHeight(context, item);
+    if (y + cardHeight > 911) {
+      throw new Error(
+        "Задачи не помещаются на странице без наложений. Сократите текст задачи или ожидаемого результата.",
+      );
+    }
     y += drawTaskCard(context, item, pageIndex * 4 + index + 1, y) + 10;
   });
 
-  context.drawImage(assets["pattern-large.png"], 0, 991, PAGE_WIDTH, 22);
+  context.drawImage(assets["pattern-large.png"], 0, 921, PAGE_WIDTH, 92);
   return canvas;
 }
 

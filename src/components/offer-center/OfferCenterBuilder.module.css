@@ -269,23 +269,23 @@
 
 .taskTopBand {
   top: 0;
-  height: 58px;
+  height: 84px;
 }
 
 .taskLogo {
   position: absolute;
-  left: 24px;
-  top: 14px;
-  width: 104px;
+  left: 28px;
+  top: 20px;
+  width: 150px;
   height: auto;
 }
 
 .taskPageLabel {
   position: absolute;
-  right: 24px;
-  top: 18px;
+  right: 28px;
+  top: 25px;
   color: #ffffff;
-  font-size: 10px;
+  font-size: 11px;
   font-weight: 800;
   letter-spacing: 0.45px;
 }
@@ -294,8 +294,8 @@
   position: absolute;
   left: 34px;
   right: 34px;
-  top: 79px;
-  bottom: 38px;
+  top: 108px;
+  bottom: 108px;
   overflow: hidden;
 }
 
@@ -414,5 +414,5 @@
 
 .taskFootBand {
   bottom: 0;
-  height: 22px;
+  height: 92px;
 }

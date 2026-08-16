@@ -5,6 +5,7 @@ import { OfferCenterBuilder } from "@/components/offer-center/OfferCenterBuilder
 import {
   buildRasterPdf,
   buildStoredZip,
+  calculatePaymentLabelY,
   calculateTaskCardHeight,
   wrapCanvasText,
 } from "@/components/offer-center/offer-export";
@@ -74,6 +75,12 @@ describe("offer export containers", () => {
   it("keeps all expected-result lines inside the calculated card height", () => {
     const resultBottom = 86 + 18 + 2 * 17;
     expect(calculateTaskCardHeight(1, 2)).toBeGreaterThan(resultBottom);
+  });
+
+  it("moves payment below a five-line work format", () => {
+    const formatBottom = 470 + 31 + 5 * 18;
+    expect(calculatePaymentLabelY(5)).toBeGreaterThan(formatBottom);
+    expect(calculatePaymentLabelY(3)).toBe(576);
   });
 
   it("builds a readable stored ZIP with every supplied filename", async () => {
