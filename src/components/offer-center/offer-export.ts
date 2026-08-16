@@ -585,6 +585,16 @@ function toArrayBuffer(bytes: Uint8Array): ArrayBuffer {
   return copy.buffer;
 }
 
+function readBlob(blob: Blob): Promise<ArrayBuffer> {
+  if (typeof blob.arrayBuffer === "function") return blob.arrayBuffer();
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => resolve(reader.result as ArrayBuffer);
+    reader.onerror = () => reject(reader.error ?? new Error("Не удалось прочитать файл."));
+    reader.readAsArrayBuffer(blob);
+  });
+}
+
 export async function buildStoredZip(files: Array<{ name: string; blob: Blob }>): Promise<Blob> {
   const encoder = new TextEncoder();
   const locals: Uint8Array[] = [];
@@ -593,7 +603,7 @@ export async function buildStoredZip(files: Array<{ name: string; blob: Blob }>)
 
   for (const file of files) {
     const name = encoder.encode(file.name);
-    const data = new Uint8Array(await file.blob.arrayBuffer());
+    const data = new Uint8Array(await readBlob(file.blob));
     const checksum = crc32(data);
     const local = concat([
       uint32(0x04034b50),

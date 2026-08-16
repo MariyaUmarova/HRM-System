@@ -19,6 +19,15 @@ beforeEach(() => {
   __resetStoreForTests();
 });
 
+function readBlob(blob: Blob): Promise<ArrayBuffer> {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => resolve(reader.result as ArrayBuffer);
+    reader.onerror = () => reject(reader.error);
+    reader.readAsArrayBuffer(blob);
+  });
+}
+
 describe("offer model", () => {
   it("treats an expected result as optional", () => {
     expect(getMissingFields(INITIAL_DRAFT)).not.toContain("ожидаемый результат");
@@ -53,7 +62,7 @@ describe("offer export containers", () => {
       { name: "offer_1.png", blob: new Blob(["page-one"]) },
       { name: "offer_2.png", blob: new Blob(["page-two"]) },
     ]);
-    const bytes = new Uint8Array(await archive.arrayBuffer());
+    const bytes = new Uint8Array(await readBlob(archive));
     expect(Array.from(bytes.slice(0, 4))).toEqual([0x50, 0x4b, 0x03, 0x04]);
     const content = new TextDecoder().decode(bytes);
     expect(content).toContain("offer_1.png");
@@ -66,7 +75,7 @@ describe("offer export containers", () => {
     canvas.height = 3039;
     canvas.toDataURL = () => "data:image/jpeg;base64,/9j/2Q==";
     const pdf = buildRasterPdf([canvas, canvas]);
-    const content = new TextDecoder().decode(new Uint8Array(await pdf.arrayBuffer()));
+    const content = new TextDecoder().decode(new Uint8Array(await readBlob(pdf)));
     expect(content.startsWith("%PDF-1.4")).toBe(true);
     expect(content).toContain("/Count 2");
     expect(content).toContain("/MediaBox");
