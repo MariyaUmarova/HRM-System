@@ -28,6 +28,9 @@ Handoff date: 2026-08-17.
   Huntflow comment draft and mandatory human confirmation.
 - Interactive HR Radar with a manually reviewed, attributed public-source news set,
   text/topic filters, per-tab saved items, freshness labels and source-control notes.
+- Supabase-backed HR Radar ingestion foundation: a daily 09:00 MSK job, an allowlisted
+  Mintrud RSS adapter, URL deduplication, a private editorial queue and run history.
+  Newly discovered links are never published automatically.
 - Interactive platform-management prototype for Head of Recruitment and HRD: exact
   @ivideon.com validation, Recruiter/Customer invitation roles, required department
   and position for Customers, and transparent client-only invitation drafts.
@@ -42,12 +45,14 @@ Handoff date: 2026-08-17.
 ## Not implemented or connected
 
 - Real user authentication or SSO.
-- Supabase database, Auth, Storage, Realtime or Edge Functions.
+- Supabase Auth, Storage and Realtime; the database and one Edge Function are connected
+  only for the synthetic HR Radar development slice.
 - Production hosting and domain.
 - Huntflow API synchronization.
 - Gmail or Yandex Mail integration.
 - AI parsing, interview analysis or spelling correction.
-- Perplexity/RSS/news ingestion.
+- Perplexity and AI news summarization; hh.ru and CIPD do not yet have approved
+  automatic adapters.
 - Server-side offer rendering, durable storage, immutable versioning and email
   dispatch.
 - Production audit log, observability, queues and background jobs.
@@ -67,8 +72,12 @@ Handoff date: 2026-08-17.
   vacancy or candidate list pages to this portal.
 - The Interview Analysis prototype is client-only and accepts only its supplied
   synthetic example. It does not call AI, persist content or write to Huntflow.
-- HR Radar currently uses a dated manual selection of public sources. It does not
-  ingest RSS, call Perplexity/AI or persist saved items.
+- HR Radar shows only editor-approved seed cards. Supabase automatically checks the
+  allowlisted Mintrud RSS at 09:00 MSK and stores only metadata in a private
+  `pending_review` queue; it does not call Perplexity/AI or persist saved items.
+- The HR Radar database tables have RLS and no `anon`/`authenticated` table grants.
+  The scheduled Edge Function uses a per-environment Vault secret whose hash is stored
+  separately; the raw secret is not committed.
 - Invitation preparation is client-only: it validates fields but does not send email,
   create a Supabase Auth user or persist the entered corporate address.
 - Placeholder functionality must remain clearly marked until a real backend path is
@@ -82,6 +91,6 @@ Handoff date: 2026-08-17.
     pnpm test
     pnpm build
 
-At handoff the expected result is: lint passes, 91 tests pass, and the production
+At handoff the expected result is: lint passes, 95 tests pass, and the production
 build succeeds. The receiving agent must rerun these checks and report the actual
 result before making material changes.

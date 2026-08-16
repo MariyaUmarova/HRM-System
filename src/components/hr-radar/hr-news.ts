@@ -24,6 +24,7 @@ export interface HrNewsSource {
   url: string;
   note: string;
   status: "Источник проверен";
+  updateMode: "Автоматически" | "Вручную";
 }
 
 export const HR_NEWS_REVIEW_DATE = "17 августа 2026";
@@ -133,18 +134,21 @@ export const HR_NEWS_SOURCES: HrNewsSource[] = [
     url: "https://mintrud.gov.ru/",
     note: "Официальные новости рынка труда и занятости; материалы сайта опубликованы с указанием лицензии CC BY 3.0.",
     status: "Источник проверен",
+    updateMode: "Автоматически",
   },
   {
     name: "hh.ru",
     url: "https://hh.ru/articles",
     note: "Отраслевая аналитика и обновления инструментов найма; в ленте используются только короткая редакторская выжимка и ссылка.",
     status: "Источник проверен",
+    updateMode: "Вручную",
   },
   {
     name: "CIPD",
     url: "https://www.cipd.org/en/about/news/",
     note: "Публичные материалы профессиональной ассоциации о рынке труда, HR и развитии людей.",
     status: "Источник проверен",
+    updateMode: "Вручную",
   },
 ];
 

@@ -21,7 +21,8 @@ deployments for review branches.
 - [x] Build the agreed invitation contract prototype: @ivideon.com only,
   Recruiter/Customer roles, and department/position required for a Customer.
 - Create separate development and production Supabase projects.
-- Add Supabase CLI/config and versioned SQL migrations.
+- [x] Add the first Supabase config and versioned SQL migrations for the synthetic
+  HR Radar development slice.
 - Implement Auth and server-side session validation.
 - Model profiles and four product roles.
 - Enforce RLS, including strict customer request isolation.
@@ -87,8 +88,13 @@ content.
 
 - [x] Build a manually reviewed, attributed HR-news prototype with topic/text filters,
   source links, saved items, freshness labels and explicit source-health notes.
-- Ingest permitted RSS/API/search sources. Respect source terms and copyright.
-- Deduplicate, classify, summarize and link to the source.
+- [x] Ingest the first permitted RSS source (Mintrud document feed) into a private
+  review queue on a daily 09:00 MSK schedule.
+- Add approved automatic adapters for hh.ru, CIPD and later sources. Respect source
+  terms and copyright.
+- [x] Deduplicate discovered Mintrud links and keep source attribution.
+- Add reviewed summaries/classification for additional sources; AI must never publish
+  automatically.
 - Use Perplexity/web search as a discovery layer, not as an unverified database.
 - Add editorial review, freshness indicators and source health monitoring.
 - Add knowledge content ownership, revision history and stale-content reminders.

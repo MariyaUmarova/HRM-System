@@ -16,6 +16,13 @@ describe("HR news data", () => {
     expect(HR_NEWS_ITEMS.every((item) => item.source && item.publishedLabel)).toBe(true);
   });
 
+  it("marks only the connected RSS source as automatic", () => {
+    expect(HR_NEWS_SOURCES.filter((source) => source.updateMode === "Автоматически")).toHaveLength(1);
+    expect(HR_NEWS_SOURCES.find((source) => source.name === "Минтруд России")?.updateMode).toBe(
+      "Автоматически",
+    );
+  });
+
   it("sorts matches by publication date and searches summaries and tags", () => {
     const matches = searchHrNews(HR_NEWS_ITEMS, "интервью", "Все темы");
     expect(matches.map((item) => item.id)).toContain("hh-call-transcripts-2026");
@@ -26,16 +33,17 @@ describe("HR news data", () => {
 });
 
 describe("HrRadar", () => {
-  it("shows real source links and an explicit manual-update notice", () => {
+  it("shows real source links and an explicit automatic-review notice", () => {
     render(<HrRadar items={HR_NEWS_ITEMS} sources={HR_NEWS_SOURCES} />);
 
-    expect(screen.getByText(/Новости проверены вручную/)).toBeInTheDocument();
+    expect(screen.getByText(/Автосбор источников: ежедневно в 09:00 МСК/)).toBeInTheDocument();
     expect(screen.getAllByRole("link", { name: "Открыть источник ↗" })).toHaveLength(
       HR_NEWS_ITEMS.length,
     );
-    expect(screen.getByText("RSS, Perplexity и автоматическая AI-суммаризация пока не подключены.", {
-      exact: false,
-    })).toBeInTheDocument();
+    expect(
+      screen.getByText(/Новые ссылки сначала попадают в закрытую очередь «На проверке»/),
+    ).toBeInTheDocument();
+    expect(screen.getByText(/AI-суммаризация не включена/)).toBeInTheDocument();
   });
 
   it("filters the feed by topic and text without hiding attribution", async () => {

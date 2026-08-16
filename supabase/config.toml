@@ -1,0 +1,3 @@
+# The scheduled function performs its own Vault-backed request authentication.
+[functions.hr-radar-ingest]
+verify_jwt = false

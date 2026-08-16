@@ -59,17 +59,18 @@ export function HrRadar({
             развитии. Полный материал всегда открывается на сайте источника.
           </p>
         </div>
-        <StatusPill tone="warning">Ручная подборка</StatusPill>
+        <StatusPill tone="success">Автосбор включён</StatusPill>
       </div>
 
       <div className="mt-5 rounded-2xl border border-brand/20 bg-brand-tint p-4">
         <p className="text-sm font-semibold text-foreground">
-          Новости проверены вручную {HR_NEWS_REVIEW_DATE}
+          Автосбор источников: ежедневно в 09:00 МСК
         </p>
         <p className="mt-1 max-w-4xl text-xs leading-5 text-muted">
-          RSS, Perplexity и автоматическая AI-суммаризация пока не подключены. В
-          карточках нет скопированных статей: только короткая редакторская выжимка,
-          дата, источник и прямая ссылка. Сохранение действует до обновления страницы.
+          Новые ссылки сначала попадают в закрытую очередь «На проверке» и не
+          публикуются автоматически. RSS Минтруда подключён; hh.ru и CIPD пока
+          обновляются вручную. AI-суммаризация не включена. Текущая лента проверена
+          редактором {HR_NEWS_REVIEW_DATE}.
         </p>
       </div>
 
@@ -79,7 +80,7 @@ export function HrRadar({
           <p className="mt-1 text-2xl font-semibold text-foreground">{items.length}</p>
         </div>
         <div className="rounded-xl border border-border bg-surface p-4">
-          <p className="text-xs text-muted">Проверенных источников</p>
+          <p className="text-xs text-muted">Разрешённых источников</p>
           <p className="mt-1 text-2xl font-semibold text-foreground">{sources.length}</p>
         </div>
         <div className="rounded-xl border border-border bg-surface p-4">
@@ -224,7 +225,7 @@ export function HrRadar({
         <aside className="h-fit rounded-2xl border border-border bg-surface p-5 shadow-sm">
           <h2 className="text-sm font-semibold text-foreground">Контроль источников</h2>
           <p className="mt-1 text-xs leading-5 text-muted">
-            Сейчас это прозрачный список разрешённых для прототипа публичных страниц.
+            Для каждого разрешённого источника явно указан текущий режим обновления.
           </p>
           <ul className="mt-4 space-y-4">
             {sources.map((source) => (
@@ -238,15 +239,24 @@ export function HrRadar({
                   >
                     {source.name} ↗
                   </a>
-                  <span className="text-[11px] font-medium text-success">доступен</span>
+                  <span
+                    className={
+                      source.updateMode === "Автоматически"
+                        ? "text-[11px] font-medium text-success"
+                        : "text-[11px] font-medium text-muted"
+                    }
+                  >
+                    {source.updateMode}
+                  </span>
                 </div>
                 <p className="mt-2 text-xs leading-5 text-muted">{source.note}</p>
               </li>
             ))}
           </ul>
           <div className="mt-5 rounded-xl bg-warning-tint p-3 text-xs leading-5 text-warning">
-            Автообновление, дедупликация и редакционная очередь появятся после
-            утверждения источников и backend-контура.
+            Минтруд собирается автоматически с дедупликацией. Новая карточка
+            становится видимой только после редакторской проверки; полный текст
+            статьи в базе не сохраняется.
           </div>
         </aside>
       </div>

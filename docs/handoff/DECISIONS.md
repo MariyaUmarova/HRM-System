@@ -96,3 +96,16 @@ home.
 - Never commit credentials, tokens, real CVs, real offer files or candidate PII.
 - Access control is enforced server-side and with PostgreSQL RLS, not only in UI.
 - Use least privilege, audit sensitive actions and encrypt data in transit and at rest.
+
+
+## HR Radar automation
+
+- Automatic discovery runs every day at 09:00 Moscow time.
+- A newly discovered link is stored as `pending_review` and is never published
+  automatically.
+- The first automatic adapter is the public Mintrud document RSS feed. hh.ru and CIPD
+  remain manual until a permitted, stable connector is approved.
+- The ingestion service stores source metadata, title, date and canonical link, not a
+  full copied article.
+- AI summarization is a separate later step and requires editorial confirmation before
+  publication.
