@@ -20,7 +20,7 @@ describe("OfferCenterBuilder", () => {
     const user = userEvent.setup();
     render(<OfferCenterBuilder />);
 
-    const candidateInput = screen.getByLabelText("Имя кандидата");
+    const candidateInput = screen.getByRole("textbox", { name: "Имя кандидата" });
     await user.clear(candidateInput);
     await user.type(candidateInput, "Марина");
 
@@ -49,7 +49,7 @@ describe("OfferCenterBuilder", () => {
   it("blocks print and explains which required field is missing", () => {
     render(<OfferCenterBuilder />);
 
-    fireEvent.change(screen.getByLabelText("Оклад"), { target: { value: "" } });
+    fireEvent.change(screen.getByRole("textbox", { name: "Оклад" }), { target: { value: "" } });
     fireEvent.click(
       screen.getByRole("checkbox", {
         name: /Я проверил\(а\) имя, должность, даты, формат работы и условия оплаты/,
