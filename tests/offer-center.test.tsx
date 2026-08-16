@@ -236,7 +236,9 @@ describe("OfferCenterBuilder", () => {
     render(<OfferCenterBuilder />);
 
     fireEvent.change(
-      screen.getByRole("textbox", { name: "Вводная строка (необязательно)" }),
+      screen.getByRole("textbox", {
+        name: /^Вводная строка \(необязательно\)/,
+      }),
       { target: { value: "" } },
     );
     fireEvent.click(
