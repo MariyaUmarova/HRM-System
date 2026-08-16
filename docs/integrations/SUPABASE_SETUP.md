@@ -66,3 +66,33 @@ Official references:
 
 - Supabase MCP: <https://supabase.com/docs/guides/ai-tools/mcp>
 - API keys: <https://supabase.com/docs/guides/getting-started/api-keys>
+
+
+## Current development slice: HR Radar
+
+The empty `HRM-Hub` project is currently used as development/stage for synthetic
+HR Radar data only.
+
+Applied migrations:
+
+- `20260816221757_hr_radar_foundation.sql`
+- `20260816222146_secure_hr_radar_schedule.sql`
+- `20260816222159_initialize_hr_radar_secret.sql`
+
+The `hr-radar-ingest` Edge Function runs from Supabase Cron every day at 06:00 UTC
+(09:00 Moscow time). It accepts only a per-environment invocation secret generated
+inside Supabase Vault. The database stores only its SHA-256 hash.
+
+A fresh environment must also create a Vault entry named `hr_radar_project_url`
+with that environment's public Supabase project URL. This value is configuration,
+not a credential. Do not copy the development URL or Vault secrets into source code.
+
+Current source state:
+
+- Mintrud document RSS: automatic, strict hostname allowlist.
+- hh.ru: manual until a permitted stable feed/API is approved.
+- CIPD: manual until a permitted stable feed/API is approved.
+- AI summaries: disabled.
+
+All discovered items start as `pending_review`. The function stores no copied article
+body and never promotes a record to `published`.

@@ -20,9 +20,16 @@ These decisions are durable unless the product owner explicitly changes them.
 - Customer.
 - Head of Recruitment and HRD have the same management permissions.
 - There is no separate Administrator account in the approved user model.
+- A signed-in user's role and interface are assigned by trusted server-side identity
+  data; users cannot change roles from a site menu.
 - HRBP, General Director and HR Operations/KDP may participate in business processes
   without receiving portal accounts in the current scope.
 - Customers may access only their own request through an isolated protected surface.
+- Every internal user has a personal account; accounts are not shared.
+- Head of Recruitment and HRD may prepare invitations with the same permissions.
+- Invitations accept only corporate addresses in the exact @ivideon.com domain.
+- An invitation assigns either Recruiter or Customer. A Customer invitation also
+  requires the person's department and position.
 
 ## Exact workflow order
 
@@ -46,7 +53,8 @@ all generated material.
 - Участники.
 - Процесс завершён, когда.
 
-Navigation back must work by level: detail → workflow/section → home.
+Navigation back must work by level: detail → workflow/section → stage → full route →
+home.
 
 ## Offer approval
 
@@ -64,11 +72,18 @@ Navigation back must work by level: detail → workflow/section → home.
 - Every generated PDF/email must have an explicit version, author, timestamp and
   audit record. “Protected from unnoticed change” means the exact approved artifact
   can be traced and compared; it does not mean the user can never make a new version.
+- The product owner's 2026 Ivideon offer PDF is the current visual reference. The
+  filled source file and its personal data must not be committed; development and
+  previews use synthetic values only.
+- The current client-side PDF/PNG/PPTX implementation is a testable prototype. Every
+  format uses the same fixed visual pages; PPTX pages are full-slide images for fidelity.
+  Final legal copy and brand fidelity still require product-owner review before
+  persistence or automated delivery is connected.
 
 ## UX and content
 
 - Reduce visual noise; prefer calm layouts and progressive disclosure.
-- A `?` help marker remains visible while hovered or keyboard-focused and closes
+- A ? help marker remains visible while hovered or keyboard-focused and closes
   when the pointer/focus leaves. On touch it opens by tap and closes by outside tap.
 - Search must be predictable, typo-tolerant and keyboard-accessible.
 - Russian copy must be proofread; AI spelling correction is a future assistive
@@ -81,3 +96,16 @@ Navigation back must work by level: detail → workflow/section → home.
 - Never commit credentials, tokens, real CVs, real offer files or candidate PII.
 - Access control is enforced server-side and with PostgreSQL RLS, not only in UI.
 - Use least privilege, audit sensitive actions and encrypt data in transit and at rest.
+
+
+## HR Radar automation
+
+- Automatic discovery runs every day at 09:00 Moscow time.
+- A newly discovered link is stored as `pending_review` and is never published
+  automatically.
+- The first automatic adapter is the public Mintrud document RSS feed. hh.ru and CIPD
+  remain manual until a permitted, stable connector is approved.
+- The ingestion service stores source metadata, title, date and canonical link, not a
+  full copied article.
+- AI summarization is a separate later step and requires editorial confirmation before
+  publication.

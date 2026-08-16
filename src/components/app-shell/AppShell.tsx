@@ -4,7 +4,6 @@ import Link from "next/link";
 import { useState, type ReactNode } from "react";
 import { ROLE_LABELS, type Role } from "@/lib/auth/roles";
 import { Nav } from "./Nav";
-import { RoleSwitcher } from "./RoleSwitcher";
 
 export function AppShell({ role, children }: { role: Role; children: ReactNode }) {
   const [mobileOpen, setMobileOpen] = useState(false);
@@ -19,7 +18,7 @@ export function AppShell({ role, children }: { role: Role; children: ReactNode }
               className="rounded-md p-2 text-foreground hover:bg-background md:hidden"
               aria-label={mobileOpen ? "Закрыть меню" : "Открыть меню"}
               aria-expanded={mobileOpen}
-              onClick={() => setMobileOpen((v) => !v)}
+              onClick={() => setMobileOpen((value) => !value)}
             >
               <span aria-hidden="true">{mobileOpen ? "✕" : "☰"}</span>
             </button>
@@ -30,20 +29,33 @@ export function AppShell({ role, children }: { role: Role; children: ReactNode }
               <span className="text-sm font-semibold text-foreground">Ivideon HR Hub</span>
             </Link>
           </div>
-          <div className="flex min-w-0 shrink-0 items-center gap-2 sm:gap-4">
-            <span className="hidden text-sm text-muted sm:inline">Роль: {ROLE_LABELS[role]}</span>
-            <RoleSwitcher role={role} />
+
+          <div
+            aria-label={"Текущий профиль: " + ROLE_LABELS[role]}
+            className="flex min-w-0 shrink-0 items-center gap-2 rounded-full border border-border bg-background px-3 py-1.5"
+          >
+            <span
+              aria-hidden="true"
+              className="inline-flex size-7 items-center justify-center rounded-full bg-brand-tint text-xs font-semibold text-brand"
+            >
+              ТП
+            </span>
+            <span className="hidden min-w-0 sm:block">
+              <span className="block text-[11px] leading-tight text-muted">Тестовый профиль</span>
+              <span className="block max-w-44 truncate text-sm font-medium leading-tight text-foreground">
+                {ROLE_LABELS[role]}
+              </span>
+            </span>
           </div>
         </div>
       </header>
 
       <div className="mx-auto flex w-full max-w-7xl flex-1 gap-6 px-4 py-6 sm:px-6">
         <aside
-          className={`fixed inset-0 z-30 bg-black/30 md:static md:z-auto md:block md:w-56 md:shrink-0 md:bg-transparent ${
-            mobileOpen ? "block" : "hidden"
-          }`}
-          onClick={(e) => {
-            if (e.target === e.currentTarget) setMobileOpen(false);
+          className={"fixed inset-0 z-30 bg-black/30 md:static md:z-auto md:block md:w-56 md:shrink-0 md:bg-transparent " +
+            (mobileOpen ? "block" : "hidden")}
+          onClick={(event) => {
+            if (event.target === event.currentTarget) setMobileOpen(false);
           }}
         >
           <div className="h-full w-64 max-w-[80vw] bg-surface p-4 md:h-auto md:w-full md:rounded-xl md:border md:border-border md:bg-surface">

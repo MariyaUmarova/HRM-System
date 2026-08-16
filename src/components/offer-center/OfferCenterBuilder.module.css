@@ -1,0 +1,430 @@
+.offerPage {
+  --offer-blue: #2456ff;
+  --offer-blue-light: #4696eb;
+  --offer-ink: #0d2348;
+  --offer-muted: #65748b;
+  --offer-pale: #eaf4ff;
+  --offer-line: #b8d6ff;
+  position: relative;
+  width: 569px;
+  height: 1013px;
+  flex: 0 0 auto;
+  overflow: hidden;
+  background: #ffffff;
+  color: var(--offer-ink);
+  font-family: Arial, Helvetica, sans-serif;
+  box-shadow: 0 14px 38px rgba(22, 43, 77, 0.16);
+}
+
+.offerPage,
+.offerPage * {
+  box-sizing: border-box;
+}
+
+.topBand,
+.footBand,
+.taskTopBand,
+.taskFootBand {
+  position: absolute;
+  left: 0;
+  width: 100%;
+  object-fit: fill;
+}
+
+.topBand {
+  top: 0;
+  height: 197px;
+}
+
+.logo {
+  position: absolute;
+  left: 27px;
+  top: 23px;
+  width: 252px;
+  height: auto;
+}
+
+.jobOffer {
+  position: absolute;
+  right: 27px;
+  top: 109px;
+  width: 273px;
+  height: auto;
+}
+
+.firstPageContent {
+  position: absolute;
+  z-index: 2;
+  left: 29px;
+  right: 29px;
+  top: 221px;
+  bottom: 210px;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.hello {
+  flex: 0 0 auto;
+  margin: 0 0 6px;
+  font-size: 31px;
+  font-weight: 800;
+  line-height: 1;
+}
+
+.intro {
+  flex: 0 0 auto;
+  margin-bottom: 8px;
+  font-size: 16px;
+  line-height: 1.2;
+}
+
+.rolePill {
+  display: inline-flex;
+  flex: 0 0 auto;
+  min-width: 235px;
+  max-width: 410px;
+  min-height: 29px;
+  align-self: flex-start;
+  align-items: center;
+  justify-content: center;
+  padding: 4px 12px;
+  overflow-wrap: anywhere;
+  border-radius: 18px;
+  background: linear-gradient(90deg, var(--offer-blue), var(--offer-blue-light));
+  color: #ffffff;
+  font-size: 16px;
+  line-height: 1.2;
+  text-align: center;
+  white-space: normal;
+}
+
+.sectionTitle {
+  flex: 0 0 auto;
+  margin: 16px 0 10px;
+  font-size: 28px;
+  font-weight: 800;
+  line-height: 1.08;
+}
+
+.infoGrid {
+  display: grid;
+  flex: 0 0 auto;
+  grid-template-columns: 1fr 1fr;
+  column-gap: 38px;
+  row-gap: 16px;
+}
+
+.info {
+  min-height: 64px;
+}
+
+.label {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 6px;
+  color: var(--offer-muted);
+  font-size: 13px;
+  line-height: 1.2;
+}
+
+.label img {
+  width: 22px;
+  height: 22px;
+}
+
+.value {
+  padding-left: 28px;
+  overflow-wrap: anywhere;
+  color: var(--offer-ink);
+  font-size: 14px;
+  line-height: 1.28;
+  white-space: pre-line;
+}
+
+.payLabel {
+  flex: 0 0 auto;
+  margin-top: 10px;
+  margin-bottom: 4px;
+}
+
+.payBox {
+  min-height: 38px;
+  flex: 0 0 auto;
+  margin-bottom: 8px;
+  overflow: hidden;
+  border: 1px solid var(--offer-line);
+  border-radius: 15px;
+  background: var(--offer-pale);
+  padding: 4px 14px 5px;
+}
+
+.payRow {
+  padding: 2px 0;
+  overflow-wrap: anywhere;
+  color: var(--offer-ink);
+  font-size: 11.5px;
+  line-height: 1.13;
+  white-space: pre-line;
+}
+
+.payRow + .payRow {
+  border-top: 1px solid #bdd6f7;
+}
+
+.payRowMain {
+  color: var(--offer-blue);
+  font-size: 12.4px;
+  font-weight: 700;
+}
+
+.benefits {
+  position: static;
+  display: grid;
+  min-height: 36px;
+  flex: 0 0 auto;
+  grid-template-columns: auto auto auto;
+  align-items: center;
+  justify-content: start;
+  gap: 10px;
+  margin-top: auto;
+  border: 1.5px solid var(--offer-blue);
+  border-radius: 18px;
+  padding: 4px 10px;
+  color: var(--offer-ink);
+  font-size: 12px;
+  line-height: 1.15;
+  white-space: nowrap;
+}
+
+.benefitItem {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 6px;
+  color: #526784;
+  font-size: 12px;
+  font-weight: 400;
+}
+
+.benefitItem strong {
+  color: var(--offer-ink);
+  font-size: inherit;
+  font-weight: 700;
+}
+
+.plus {
+  color: var(--offer-blue);
+  font-size: 18px;
+  font-weight: 500;
+  line-height: 1;
+}
+
+.footBand {
+  z-index: 3;
+  bottom: 0;
+  height: 209px;
+}
+
+.footerTitle,
+.footerDate,
+.confidential,
+.robot {
+  position: absolute;
+  z-index: 4;
+}
+
+.footerTitle {
+  left: 31px;
+  bottom: 102px;
+  max-width: 390px;
+  color: #ffffff;
+  font-size: 35px;
+  font-weight: 400;
+  line-height: 0.96;
+}
+
+.footerDate {
+  left: 31px;
+  bottom: 72px;
+  color: #ffffff;
+  font-size: 17px;
+  line-height: 1.2;
+}
+
+.confidential {
+  left: 31px;
+  bottom: 23px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  color: #ffffff;
+  font-size: 10px;
+  line-height: 1.25;
+}
+
+.confidential img {
+  width: 22px;
+  height: 22px;
+}
+
+.robot {
+  right: 28px;
+  bottom: 0;
+  width: 170px;
+  height: auto;
+}
+
+.taskPage {
+  background: #ffffff;
+}
+
+.taskTopBand {
+  top: 0;
+  height: 84px;
+}
+
+.taskLogo {
+  position: absolute;
+  left: 28px;
+  top: 20px;
+  width: 150px;
+  height: auto;
+}
+
+.taskPageLabel {
+  position: absolute;
+  right: 28px;
+  top: 25px;
+  color: #ffffff;
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.45px;
+}
+
+.taskContent {
+  position: absolute;
+  left: 34px;
+  right: 34px;
+  top: 108px;
+  bottom: 108px;
+  overflow: hidden;
+}
+
+.taskSectionTitle {
+  margin: 0 0 10px;
+  color: var(--offer-ink);
+  font-size: 29px;
+  font-weight: 800;
+  line-height: 1.05;
+}
+
+.taskSubtitle {
+  margin: 0 0 14px;
+  overflow-wrap: anywhere;
+  color: #526784;
+  font-size: 14px;
+  line-height: 1.35;
+}
+
+.taskRolePill {
+  min-width: 255px;
+  max-width: 390px;
+  margin: 0 0 25px;
+  padding: 5px 14px;
+  font-size: 15px;
+}
+
+.taskList {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.taskCard {
+  flex: 0 0 auto;
+  overflow: hidden;
+  border: 1px solid var(--offer-line);
+  border-radius: 10px;
+  background: #ffffff;
+  padding: 11px 13px 12px;
+  color: var(--offer-ink);
+  font-size: 13px;
+  line-height: 1.34;
+}
+
+.taskHead {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 23px;
+  margin: 0 0 6px;
+}
+
+.taskNumber {
+  display: inline-flex;
+  width: 23px;
+  height: 23px;
+  flex: 0 0 23px;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  background: var(--offer-blue);
+  color: #ffffff;
+  font-size: 11px;
+  font-weight: 800;
+}
+
+.taskLabel {
+  color: var(--offer-blue);
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: 0.05px;
+}
+
+.taskText {
+  min-width: 0;
+  max-width: 100%;
+  padding-left: 31px;
+  overflow-wrap: anywhere;
+  word-break: break-word;
+  font-size: 13px;
+  line-height: 1.36;
+  white-space: pre-line;
+}
+
+.resultBlock {
+  display: block;
+  min-width: 0;
+  margin: 10px 0 0 31px;
+  border-top: 1px solid #d7e7fb;
+  padding-top: 9px;
+}
+
+.resultLabel {
+  display: inline-block;
+  margin: 0 0 6px;
+  border-radius: 5px;
+  background: #eef6ff;
+  padding: 3px 7px;
+  color: var(--offer-blue);
+  font-size: 10px;
+  font-weight: 800;
+  line-height: 1.2;
+}
+
+.resultText {
+  min-width: 0;
+  max-width: 100%;
+  overflow-wrap: anywhere;
+  word-break: break-word;
+  color: var(--offer-ink);
+  font-size: 12px;
+  line-height: 1.38;
+  white-space: pre-line;
+}
+
+.taskFootBand {
+  bottom: 0;
+  height: 92px;
+}

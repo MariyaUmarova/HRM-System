@@ -5,21 +5,24 @@ service without the product owner's confirmation.
 
 ## Phase 0 — Make the project portable
 
-- [x] Create the private GitHub repository `MariyaUmarova/HRM-System`.
-- [x] Push the verified baseline to `main` (the repository had no application base
+- [x] Create the private GitHub repository MariyaUmarova/HRM-System.
+- [x] Push the verified baseline to main (the repository had no application base
   branch to target with a pull request).
-- [x] Enable CI for lint, 57 tests and build.
-- [ ] Protect `main` and require the CI check for future pull requests.
-- [ ] Choose a preview/production host and connect it to GitHub.
-- [ ] Record environments: local, preview, development and production.
+- [x] Enable CI for lint, tests and build.
+- [ ] Protect main and require the CI check for future pull requests.
+- [x] Connect Vercel to GitHub and publish browser-accessible previews.
+- [ ] Record environments: preview, development and production.
 
-Current status: Codex can open the source from GitHub on another authorized computer;
-the browser-accessible preview URL is still pending.
+Current status: the source is available in private GitHub and Vercel creates preview
+deployments for review branches.
 
 ## Phase 1 — Supabase foundation
 
+- [x] Build the agreed invitation contract prototype: @ivideon.com only,
+  Recruiter/Customer roles, and department/position required for a Customer.
 - Create separate development and production Supabase projects.
-- Add Supabase CLI/config and versioned SQL migrations.
+- [x] Add the first Supabase config and versioned SQL migrations for the synthetic
+  HR Radar development slice.
 - Implement Auth and server-side session validation.
 - Model profiles and four product roles.
 - Enforce RLS, including strict customer request isolation.
@@ -52,7 +55,10 @@ Exit: integrations save clicks without duplicating Huntflow's ATS data model.
 
 ## Phase 4 — Offer Center
 
-- Create versioned templates and role-task page support.
+- [x] Build the supplied field model, fixed cover/task pages, optional task results,
+  assigned-request prefill, explicit human check and direct PDF/PNG/PPTX downloads for
+  product-owner testing.
+- Create durable versioned templates and persistence for approved artifacts.
 - Parse a free-form recruiter brief into structured fields with a review screen.
 - Validate required fields and highlight uncertainty; never invent compensation or
   legal terms.
@@ -66,6 +72,8 @@ Exit: the recruiter prepares a correct, reviewable approval package with minimal
 
 ## Phase 5 — Interview AI and search copilot
 
+- [x] Build a client-only contract prototype on synthetic data: evidence-linked facts,
+  conclusions, risks and questions, editable Huntflow draft and explicit human check.
 - Accept authorized interview material and apply retention/redaction rules.
 - Produce evidence-linked structured analysis with human approval.
 - Export the approved result to Huntflow.
@@ -78,8 +86,15 @@ content.
 
 ## Phase 6 — HR radar and knowledge operations
 
-- Ingest permitted RSS/API/search sources. Respect source terms and copyright.
-- Deduplicate, classify, summarize and link to the source.
+- [x] Build a manually reviewed, attributed HR-news prototype with topic/text filters,
+  source links, saved items, freshness labels and explicit source-health notes.
+- [x] Ingest the first permitted RSS source (Mintrud document feed) into a private
+  review queue on a daily 09:00 MSK schedule.
+- Add approved automatic adapters for hh.ru, CIPD and later sources. Respect source
+  terms and copyright.
+- [x] Deduplicate discovered Mintrud links and keep source attribution.
+- Add reviewed summaries/classification for additional sources; AI must never publish
+  automatically.
 - Use Perplexity/web search as a discovery layer, not as an unverified database.
 - Add editorial review, freshness indicators and source health monitoring.
 - Add knowledge content ownership, revision history and stale-content reminders.
