@@ -69,7 +69,7 @@ function TextField({
   return (
     <label className="block text-sm font-medium text-foreground">
       {label}
-      {required ? <span className="ml-1 text-danger">*</span> : null}
+      {required ? <span aria-hidden="true" className="ml-1 text-danger">*</span> : null}
       <input
         className={FIELD_CLASS}
         name={name}
