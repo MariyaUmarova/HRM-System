@@ -1,4 +1,4 @@
-import { render, screen } from "@testing-library/react";
+import { render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { describe, expect, it, vi } from "vitest";
 import { InterviewAnalysisPrototype } from "@/components/interview-analysis/InterviewAnalysisPrototype";
@@ -54,12 +54,8 @@ describe("InterviewAnalysisPrototype", () => {
   });
 
   it("copies only the confirmed draft and never sends it to Huntflow", async () => {
-    const writeText = vi.fn().mockResolvedValue(undefined);
-    Object.defineProperty(navigator, "clipboard", {
-      configurable: true,
-      value: { writeText },
-    });
     const user = userEvent.setup();
+    const writeText = vi.spyOn(navigator.clipboard, "writeText").mockResolvedValue(undefined);
     render(<InterviewAnalysisPrototype />);
 
     await user.click(screen.getByRole("button", { name: "Загрузить тестовый пример" }));
@@ -71,7 +67,7 @@ describe("InterviewAnalysisPrototype", () => {
     );
     await user.click(screen.getByRole("button", { name: "Скопировать подтверждённый текст" }));
 
-    expect(writeText).toHaveBeenCalledOnce();
+    await waitFor(() => expect(writeText).toHaveBeenCalledOnce());
     expect(screen.getByRole("button", { name: "Отправить в Huntflow" })).toBeDisabled();
     expect(screen.getByRole("status")).toHaveTextContent("В Huntflow ничего не отправлено");
   });
