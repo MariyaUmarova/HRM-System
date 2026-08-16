@@ -246,7 +246,7 @@ export function OfferCenterBuilder() {
   };
 
   const handleExport = async (kind: OfferExportKind) => {
-    if (!canExport || !previewRef.current) return;
+    if (!canExport) return;
     setBusy(kind);
     setExportStatus(
       kind === "pdf"
@@ -256,10 +256,7 @@ export function OfferCenterBuilder() {
           : "Готовим PPTX…",
     );
     try {
-      const pages = Array.from(
-        previewRef.current.querySelectorAll<HTMLElement>("[data-offer-page]"),
-      );
-      await exportOffer(kind, pages, draft.candidateName, draft.position);
+      await exportOffer(kind, draft);
       setExportStatus(
         kind === "pdf"
           ? "PDF скачан."

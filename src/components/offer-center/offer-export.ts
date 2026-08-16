@@ -1,3 +1,12 @@
+import {
+  buildWorkFormat,
+  displayDate,
+  getOfferPages,
+  getPaymentRows,
+  type OfferDraft,
+  type OfferTask,
+} from "./offer-model";
+
 export type OfferExportKind = "pdf" | "png" | "pptx";
 
 const PAGE_WIDTH = 569;
@@ -7,6 +16,12 @@ const PDF_WIDTH_POINTS = (148 / 25.4) * 72;
 const PDF_HEIGHT_POINTS = (263 / 25.4) * 72;
 const PPTX_WIDTH_INCHES = 148 / 25.4;
 const PPTX_HEIGHT_INCHES = 263 / 25.4;
+const BLUE = "#2456ff";
+const BLUE_LIGHT = "#4696eb";
+const INK = "#0d2348";
+const MUTED = "#65748b";
+const PALE = "#eaf4ff";
+const LINE = "#b8d6ff";
 
 interface PptxSlide {
   addImage(options: { data: string; x: number; y: number; w: number; h: number }): void;
@@ -30,127 +45,471 @@ declare global {
   }
 }
 
-function waitForTwoFrames(): Promise<void> {
-  return new Promise((resolve) => {
-    requestAnimationFrame(() => requestAnimationFrame(() => resolve()));
-  });
-}
+type AssetName =
+  | "icon-conf.png"
+  | "icon-date.png"
+  | "icon-dept.png"
+  | "icon-format.png"
+  | "icon-manager.png"
+  | "icon-pay.png"
+  | "job-offer.png"
+  | "logo.png"
+  | "pattern-large.png"
+  | "pattern-small.png"
+  | "robot.png";
 
-function waitForImages(root: ParentNode): Promise<void[]> {
-  return Promise.all(
-    Array.from(root.querySelectorAll("img")).map(
-      (image) =>
-        new Promise<void>((resolve) => {
-          if (image.complete && image.naturalWidth > 0) {
-            resolve();
-            return;
-          }
-          const done = () => resolve();
-          image.addEventListener("load", done, { once: true });
-          image.addEventListener("error", done, { once: true });
-          window.setTimeout(done, 3000);
+const ASSET_NAMES: AssetName[] = [
+  "icon-conf.png",
+  "icon-date.png",
+  "icon-dept.png",
+  "icon-format.png",
+  "icon-manager.png",
+  "icon-pay.png",
+  "job-offer.png",
+  "logo.png",
+  "pattern-large.png",
+  "pattern-small.png",
+  "robot.png",
+];
+
+let assetPromise: Promise<Record<AssetName, HTMLImageElement>> | null = null;
+
+function loadImage(name: AssetName): Promise<HTMLImageElement> {
+  return fetch(`/offer-assets/${name}`, { cache: "force-cache" })
+    .then((response) => {
+      if (!response.ok) throw new Error(`Не загрузился фирменный элемент: ${name}`);
+      return response.blob();
+    })
+    .then(
+      (blob) =>
+        new Promise<HTMLImageElement>((resolve, reject) => {
+          const objectUrl = URL.createObjectURL(blob);
+          const image = new Image();
+          image.onload = () => {
+            URL.revokeObjectURL(objectUrl);
+            resolve(image);
+          };
+          image.onerror = () => {
+            URL.revokeObjectURL(objectUrl);
+            reject(new Error(`Не удалось прочитать фирменный элемент: ${name}`));
+          };
+          image.src = objectUrl;
         }),
-    ),
-  );
+    );
 }
 
-function inlineComputedStyles(source: HTMLElement, clone: HTMLElement): void {
-  const sourceElements = [source, ...Array.from(source.querySelectorAll<HTMLElement>("*"))];
-  const cloneElements = [clone, ...Array.from(clone.querySelectorAll<HTMLElement>("*"))];
-
-  sourceElements.forEach((element, index) => {
-    const target = cloneElements[index];
-    if (!target) return;
-    const computed = window.getComputedStyle(element);
-    let cssText = "";
-    for (let styleIndex = 0; styleIndex < computed.length; styleIndex += 1) {
-      const property = computed.item(styleIndex);
-      if (property === "transform" || property === "transition" || property === "box-shadow") {
-        continue;
-      }
-      cssText += `${property}:${computed.getPropertyValue(property)};`;
-    }
-    target.setAttribute("style", cssText);
-  });
-
-  clone.style.width = `${PAGE_WIDTH}px`;
-  clone.style.height = `${PAGE_HEIGHT}px`;
-  clone.style.margin = "0";
-  clone.style.overflow = "hidden";
-  clone.style.position = "relative";
-  clone.style.transform = "none";
-  clone.style.boxShadow = "none";
-}
-
-function imageAsDataUrl(image: HTMLImageElement): string {
-  const canvas = document.createElement("canvas");
-  canvas.width = image.naturalWidth || image.width;
-  canvas.height = image.naturalHeight || image.height;
-  const context = canvas.getContext("2d");
-  if (!context) throw new Error("Браузер не смог подготовить фирменную графику.");
-  context.drawImage(image, 0, 0, canvas.width, canvas.height);
-  return canvas.toDataURL("image/png");
-}
-
-function embedImages(source: HTMLElement, clone: HTMLElement): void {
-  const sourceImages = Array.from(source.querySelectorAll("img"));
-  const cloneImages = Array.from(clone.querySelectorAll("img"));
-  sourceImages.forEach((image, index) => {
-    const target = cloneImages[index];
-    if (!target) return;
-    target.removeAttribute("srcset");
-    target.removeAttribute("sizes");
-    target.src = imageAsDataUrl(image);
-  });
-}
-
-async function pageToCanvas(page: HTMLElement): Promise<HTMLCanvasElement> {
-  await waitForImages(page);
-  const clone = page.cloneNode(true) as HTMLElement;
-  inlineComputedStyles(page, clone);
-  embedImages(page, clone);
-
-  const host = document.createElement("div");
-  host.setAttribute("xmlns", "http://www.w3.org/1999/xhtml");
-  host.style.cssText =
-    `width:${PAGE_WIDTH}px;height:${PAGE_HEIGHT}px;overflow:hidden;margin:0;padding:0;background:#fff;position:relative;`;
-  host.appendChild(clone);
-
-  const markup = new XMLSerializer().serializeToString(host);
-  const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="${PAGE_WIDTH}" height="${PAGE_HEIGHT}" viewBox="0 0 ${PAGE_WIDTH} ${PAGE_HEIGHT}"><foreignObject x="0" y="0" width="${PAGE_WIDTH}" height="${PAGE_HEIGHT}">${markup}</foreignObject></svg>`;
-  const objectUrl = URL.createObjectURL(new Blob([svg], { type: "image/svg+xml;charset=utf-8" }));
-
-  try {
-    const rendered = await new Promise<HTMLImageElement>((resolve, reject) => {
-      const image = new Image();
-      image.onload = () => resolve(image);
-      image.onerror = () => reject(new Error("Не удалось отрисовать страницу оффера."));
-      image.src = objectUrl;
+function loadAssets(): Promise<Record<AssetName, HTMLImageElement>> {
+  if (assetPromise) return assetPromise;
+  assetPromise = Promise.all(ASSET_NAMES.map(async (name) => [name, await loadImage(name)] as const))
+    .then((items) => Object.fromEntries(items) as Record<AssetName, HTMLImageElement>)
+    .catch((error) => {
+      assetPromise = null;
+      throw error;
     });
-    const canvas = document.createElement("canvas");
-    canvas.width = PAGE_WIDTH * RENDER_SCALE;
-    canvas.height = PAGE_HEIGHT * RENDER_SCALE;
-    const context = canvas.getContext("2d", { alpha: false });
-    if (!context) throw new Error("Браузер не поддерживает экспорт изображения.");
-    context.fillStyle = "#ffffff";
-    context.fillRect(0, 0, canvas.width, canvas.height);
-    context.drawImage(rendered, 0, 0, canvas.width, canvas.height);
-    return canvas;
-  } finally {
-    URL.revokeObjectURL(objectUrl);
-  }
+  return assetPromise;
 }
 
-async function renderPages(pages: HTMLElement[]): Promise<HTMLCanvasElement[]> {
-  if (pages.length === 0) throw new Error("Страницы предпросмотра не найдены.");
-  await document.fonts?.ready;
-  await waitForImages(document);
-  await waitForTwoFrames();
+function createPageCanvas(): { canvas: HTMLCanvasElement; context: CanvasRenderingContext2D } {
+  const canvas = document.createElement("canvas");
+  canvas.width = PAGE_WIDTH * RENDER_SCALE;
+  canvas.height = PAGE_HEIGHT * RENDER_SCALE;
+  const context = canvas.getContext("2d", { alpha: false });
+  if (!context) throw new Error("Браузер не поддерживает экспорт изображения.");
+  context.scale(RENDER_SCALE, RENDER_SCALE);
+  context.fillStyle = "#ffffff";
+  context.fillRect(0, 0, PAGE_WIDTH, PAGE_HEIGHT);
+  context.textBaseline = "top";
+  return { canvas, context };
+}
 
-  const canvases: HTMLCanvasElement[] = [];
-  for (const page of pages) {
-    canvases.push(await pageToCanvas(page));
+function roundedRect(
+  context: CanvasRenderingContext2D,
+  x: number,
+  y: number,
+  width: number,
+  height: number,
+  radius: number,
+): void {
+  const safeRadius = Math.min(radius, width / 2, height / 2);
+  context.beginPath();
+  context.moveTo(x + safeRadius, y);
+  context.lineTo(x + width - safeRadius, y);
+  context.quadraticCurveTo(x + width, y, x + width, y + safeRadius);
+  context.lineTo(x + width, y + height - safeRadius);
+  context.quadraticCurveTo(x + width, y + height, x + width - safeRadius, y + height);
+  context.lineTo(x + safeRadius, y + height);
+  context.quadraticCurveTo(x, y + height, x, y + height - safeRadius);
+  context.lineTo(x, y + safeRadius);
+  context.quadraticCurveTo(x, y, x + safeRadius, y);
+  context.closePath();
+}
+
+function wrapText(
+  context: CanvasRenderingContext2D,
+  text: string,
+  maxWidth: number,
+): string[] {
+  const lines: string[] = [];
+  const paragraphs = String(text || "—").split("\n");
+
+  paragraphs.forEach((paragraph) => {
+    const words = paragraph.trim().split(/\s+/).filter(Boolean);
+    if (words.length === 0) {
+      lines.push("");
+      return;
+    }
+    let line = "";
+    words.forEach((word) => {
+      const candidate = line ? `${line} ${word}` : word;
+      if (!line || context.measureText(candidate).width <= maxWidth) {
+        line = candidate;
+        return;
+      }
+      lines.push(line);
+      line = word;
+    });
+    if (line) lines.push(line);
+  });
+  return lines;
+}
+
+function drawWrappedText(
+  context: CanvasRenderingContext2D,
+  text: string,
+  x: number,
+  y: number,
+  maxWidth: number,
+  lineHeight: number,
+): number {
+  const lines = wrapText(context, text, maxWidth);
+  lines.forEach((line, index) => context.fillText(line, x, y + index * lineHeight));
+  return lines.length * lineHeight;
+}
+
+function drawRolePill(
+  context: CanvasRenderingContext2D,
+  text: string,
+  x: number,
+  y: number,
+  width: number,
+  height: number,
+  font: string,
+): void {
+  const gradient = context.createLinearGradient(x, y, x + width, y);
+  gradient.addColorStop(0, BLUE);
+  gradient.addColorStop(1, BLUE_LIGHT);
+  roundedRect(context, x, y, width, height, height / 2);
+  context.fillStyle = gradient;
+  context.fill();
+  context.save();
+  roundedRect(context, x, y, width, height, height / 2);
+  context.clip();
+  context.fillStyle = "#ffffff";
+  context.font = font;
+  context.textAlign = "center";
+  context.fillText(text || "[Должность]", x + width / 2, y + 5, width - 20);
+  context.restore();
+  context.textAlign = "left";
+}
+
+function drawInfoBlock(
+  context: CanvasRenderingContext2D,
+  assets: Record<AssetName, HTMLImageElement>,
+  icon: AssetName,
+  label: string,
+  value: string,
+  x: number,
+  y: number,
+  width: number,
+): void {
+  context.drawImage(assets[icon], x, y, 22, 22);
+  context.fillStyle = MUTED;
+  context.font = "13px Arial, Helvetica, sans-serif";
+  context.fillText(label, x + 30, y + 3);
+  context.fillStyle = INK;
+  context.font = "14px Arial, Helvetica, sans-serif";
+  drawWrappedText(context, value || "—", x + 28, y + 31, width - 28, 18);
+}
+
+function drawFirstPage(
+  draft: OfferDraft,
+  assets: Record<AssetName, HTMLImageElement>,
+): HTMLCanvasElement {
+  const { canvas, context } = createPageCanvas();
+
+  context.drawImage(assets["pattern-small.png"], 0, 0, PAGE_WIDTH, 197);
+  context.drawImage(assets["logo.png"], 27, 23, 252, 54);
+  context.drawImage(assets["job-offer.png"], 269, 109, 273, 52);
+
+  context.fillStyle = INK;
+  context.font = "800 31px Arial, Helvetica, sans-serif";
+  context.fillText(`${draft.candidateName.trim() || "[Имя]"}, привет!`, 29, 221);
+
+  context.font = "16px Arial, Helvetica, sans-serif";
+  context.fillText("Мы приглашаем тебя в команду ivideon на позицию", 29, 258);
+
+  const roleWidth = Math.min(410, Math.max(235, context.measureText(draft.position).width + 30));
+  drawRolePill(
+    context,
+    draft.position.trim() || "[Должность]",
+    29,
+    284,
+    roleWidth,
+    29,
+    "16px Arial, Helvetica, sans-serif",
+  );
+
+  context.fillStyle = INK;
+  context.font = "800 29px Arial, Helvetica, sans-serif";
+  context.fillText("Вот что мы предлагаем:", 29, 337);
+
+  drawInfoBlock(
+    context,
+    assets,
+    "icon-dept.png",
+    "Подразделение",
+    draft.department,
+    29,
+    383,
+    235,
+  );
+  drawInfoBlock(
+    context,
+    assets,
+    "icon-date.png",
+    "Дата выхода",
+    displayDate(draft.startDate),
+    302,
+    383,
+    238,
+  );
+  drawInfoBlock(
+    context,
+    assets,
+    "icon-format.png",
+    "Формат",
+    buildWorkFormat(draft),
+    29,
+    470,
+    235,
+  );
+  drawInfoBlock(
+    context,
+    assets,
+    "icon-manager.png",
+    "Руководитель",
+    `${draft.manager.trim() || "—"}\n${draft.managerRole.trim() || "—"}`,
+    302,
+    470,
+    238,
+  );
+
+  context.drawImage(assets["icon-pay.png"], 29, 576, 22, 22);
+  context.fillStyle = MUTED;
+  context.font = "13px Arial, Helvetica, sans-serif";
+  context.fillText("Оплата труда", 59, 579);
+
+  const rows = getPaymentRows(draft);
+  const rowLineCounts = rows.map((row) => {
+    context.font = row.main
+      ? "700 13.2px Arial, Helvetica, sans-serif"
+      : "12.4px Arial, Helvetica, sans-serif";
+    return wrapText(context, row.text, 471).length;
+  });
+  const payHeight =
+    12 +
+    rowLineCounts.reduce((sum, count) => sum + Math.max(16, count * 15) + 10, 0);
+  roundedRect(context, 29, 605, 511, payHeight, 15);
+  context.fillStyle = PALE;
+  context.fill();
+  context.strokeStyle = LINE;
+  context.lineWidth = 1;
+  context.stroke();
+
+  let rowY = 612;
+  rows.forEach((row, index) => {
+    if (index > 0) {
+      context.strokeStyle = "#bdd6f7";
+      context.beginPath();
+      context.moveTo(43, rowY - 5);
+      context.lineTo(526, rowY - 5);
+      context.stroke();
+    }
+    context.fillStyle = row.main ? BLUE : INK;
+    context.font = row.main
+      ? "700 13.2px Arial, Helvetica, sans-serif"
+      : "12.4px Arial, Helvetica, sans-serif";
+    const height = drawWrappedText(context, row.text, 43, rowY, 471, 15);
+    rowY += Math.max(16, height) + 10;
+  });
+
+  roundedRect(context, 29, 753, 511, 42, 18);
+  context.strokeStyle = BLUE;
+  context.lineWidth = 1.5;
+  context.stroke();
+  context.fillStyle = INK;
+  context.font = "700 14px Arial, Helvetica, sans-serif";
+  context.fillText("ДМС", 42, 766);
+  context.fillStyle = "#6f7784";
+  context.font = "10px Arial, Helvetica, sans-serif";
+  context.fillText('Страховая компания "Лучи"', 78, 769);
+  context.fillStyle = BLUE;
+  context.font = "20px Arial, Helvetica, sans-serif";
+  context.fillText("+", 231, 761);
+  context.fillStyle = INK;
+  context.font = "700 14px Arial, Helvetica, sans-serif";
+  context.fillText("Английский язык", 259, 766);
+  context.fillStyle = "#6f7784";
+  context.font = "10px Arial, Helvetica, sans-serif";
+  context.fillText("SkyEng", 386, 769);
+
+  context.drawImage(assets["pattern-large.png"], 0, 804, PAGE_WIDTH, 209);
+  context.fillStyle = "#ffffff";
+  context.font = "35px Arial, Helvetica, sans-serif";
+  context.fillText("Будем рады видеть", 31, 845);
+  context.fillText("тебя в команде!", 31, 879);
+  context.font = "17px Arial, Helvetica, sans-serif";
+  context.fillText(`Ждём твой ответ до ${displayDate(draft.answerDate)}`, 31, 928);
+
+  context.drawImage(assets["icon-conf.png"], 31, 968, 22, 22);
+  context.font = "10px Arial, Helvetica, sans-serif";
+  context.fillText("это сообщение конфиденциально", 63, 969);
+  context.fillText("и не предназначено для распространения", 63, 981);
+  context.drawImage(assets["robot.png"], 371, 840, 170, 173);
+
+  return canvas;
+}
+
+function taskCardHeight(context: CanvasRenderingContext2D, item: OfferTask): number {
+  context.font = "13px Arial, Helvetica, sans-serif";
+  const taskLines = wrapText(context, item.task.trim(), 430).length;
+  let height = 44 + taskLines * 18;
+  if (item.result.trim()) {
+    context.font = "12px Arial, Helvetica, sans-serif";
+    const resultLines = wrapText(context, item.result.trim(), 430).length;
+    height += 33 + resultLines * 17;
   }
+  return Math.max(88, height);
+}
+
+function drawTaskCard(
+  context: CanvasRenderingContext2D,
+  item: OfferTask,
+  number: number,
+  y: number,
+): number {
+  const height = taskCardHeight(context, item);
+  roundedRect(context, 34, y, 501, height, 10);
+  context.fillStyle = "#ffffff";
+  context.fill();
+  context.strokeStyle = LINE;
+  context.lineWidth = 1;
+  context.stroke();
+
+  context.beginPath();
+  context.arc(59, y + 24, 11.5, 0, Math.PI * 2);
+  context.fillStyle = BLUE;
+  context.fill();
+  context.fillStyle = "#ffffff";
+  context.font = "800 11px Arial, Helvetica, sans-serif";
+  context.textAlign = "center";
+  context.fillText(String(number), 59, y + 18);
+  context.textAlign = "left";
+
+  context.fillStyle = BLUE;
+  context.font = "800 12px Arial, Helvetica, sans-serif";
+  context.fillText("Задача", 78, y + 18);
+
+  context.fillStyle = INK;
+  context.font = "13px Arial, Helvetica, sans-serif";
+  const taskHeight = drawWrappedText(context, item.task.trim(), 78, y + 49, 430, 18);
+
+  if (item.result.trim()) {
+    const lineY = y + 57 + taskHeight;
+    context.strokeStyle = "#d7e7fb";
+    context.beginPath();
+    context.moveTo(78, lineY);
+    context.lineTo(522, lineY);
+    context.stroke();
+
+    roundedRect(context, 78, lineY + 9, 128, 18, 5);
+    context.fillStyle = "#eef6ff";
+    context.fill();
+    context.fillStyle = BLUE;
+    context.font = "800 10px Arial, Helvetica, sans-serif";
+    context.fillText("Ожидаемый результат", 85, lineY + 13);
+
+    context.fillStyle = INK;
+    context.font = "12px Arial, Helvetica, sans-serif";
+    drawWrappedText(context, item.result.trim(), 78, lineY + 34, 430, 17);
+  }
+
+  return height;
+}
+
+function drawTaskPage(
+  draft: OfferDraft,
+  tasks: OfferTask[],
+  pageIndex: number,
+  assets: Record<AssetName, HTMLImageElement>,
+): HTMLCanvasElement {
+  const { canvas, context } = createPageCanvas();
+  context.drawImage(assets["pattern-small.png"], 0, 0, PAGE_WIDTH, 58);
+  context.drawImage(assets["logo.png"], 24, 14, 104, 22);
+  context.fillStyle = "#ffffff";
+  context.font = "800 10px Arial, Helvetica, sans-serif";
+  context.textAlign = "right";
+  context.fillText("JOB OFFER", 545, 18);
+  context.textAlign = "left";
+
+  context.fillStyle = INK;
+  context.font = "800 29px Arial, Helvetica, sans-serif";
+  context.fillText(pageIndex === 0 ? "Твои задачи" : "Твои задачи — продолжение", 34, 79);
+
+  let y = 119;
+  if (pageIndex === 0 && draft.tasksSubtitle.trim()) {
+    context.fillStyle = "#526784";
+    context.font = "14px Arial, Helvetica, sans-serif";
+    const subtitleHeight = drawWrappedText(
+      context,
+      draft.tasksSubtitle.trim(),
+      34,
+      y,
+      501,
+      19,
+    );
+    y += subtitleHeight + 14;
+  }
+  if (pageIndex === 0) {
+    context.font = "15px Arial, Helvetica, sans-serif";
+    const roleWidth = Math.min(390, Math.max(255, context.measureText(draft.position).width + 32));
+    drawRolePill(
+      context,
+      draft.position.trim() || "[Должность]",
+      34,
+      y,
+      roleWidth,
+      29,
+      "15px Arial, Helvetica, sans-serif",
+    );
+    y += 54;
+  }
+
+  tasks.forEach((item, index) => {
+    y += drawTaskCard(context, item, pageIndex * 4 + index + 1, y) + 10;
+  });
+
+  context.drawImage(assets["pattern-large.png"], 0, 991, PAGE_WIDTH, 22);
+  return canvas;
+}
+
+async function renderPages(draft: OfferDraft): Promise<HTMLCanvasElement[]> {
+  await document.fonts?.ready;
+  const assets = await loadAssets();
+  const canvases = [drawFirstPage(draft, assets)];
+  getOfferPages(draft).forEach((tasks, pageIndex) => {
+    canvases.push(drawTaskPage(draft, tasks, pageIndex, assets));
+  });
   return canvases;
 }
 
@@ -415,12 +774,10 @@ async function exportPptx(canvases: HTMLCanvasElement[], fileName: string): Prom
 
 export async function exportOffer(
   kind: OfferExportKind,
-  pages: HTMLElement[],
-  candidateName: string,
-  position: string,
+  draft: OfferDraft,
 ): Promise<void> {
-  const fileName = safeFileBase(candidateName, position);
-  const canvases = await renderPages(pages);
+  const fileName = safeFileBase(draft.candidateName, draft.position);
+  const canvases = await renderPages(draft);
 
   if (kind === "pdf") {
     downloadBlob(makePdf(canvases), `${fileName}.pdf`);
