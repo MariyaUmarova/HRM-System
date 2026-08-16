@@ -14,13 +14,13 @@ export default async function OfferCenterPage() {
       <Breadcrumbs items={[{ label: "Моя работа", href: "/" }, { label: "Центр офферов" }]} />
       <h1 className="text-xl font-semibold text-foreground">Центр офферов</h1>
       <p className="mt-1 max-w-3xl text-sm text-muted">
-        Заполните условия, проверьте одностраничный предпросмотр по визуальному шаблону Ivideon и
-        сохраните его в PDF через системную печать браузера.
+        Заполните условия, проверьте все страницы в фиксированном шаблоне Ivideon и скачайте готовый
+        PDF, комплект PNG или PPTX без системной печати.
       </p>
 
       <div className="mt-4 rounded-xl border border-warning/25 bg-warning-tint px-4 py-3 text-sm text-warning">
-        Это безопасный прототип на синтетических данных. Он пока не сохраняет офферы, не отправляет
-        письма и не подключён к Huntflow, Supabase или AI.
+        Это безопасный прототип на синтетических данных. Связь с заявкой пока работает только внутри
+        браузера; офферы не сохраняются, не отправляются и не подключены к Huntflow, Supabase или AI.
       </div>
 
       <div className="mt-6">

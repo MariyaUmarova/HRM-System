@@ -18,8 +18,9 @@ Handoff date: 2026-08-16.
 - Weekly recruiter focus, offer approval and draft artifact mock cards.
 - Customer intake request mock flow with status and assignment controls for
   management roles.
-- Offer Center prototype with a synthetic-data form, live one-page visual preview,
-  required human confirmation and browser print/save-to-PDF.
+- Offer Center prototype with the supplied field model, conditional selects and weekdays,
+  fixed first and task pages, optional expected results, assigned-request position/department
+  prefill, required human confirmation and direct PDF/PNG/PPTX downloads.
 - Placeholder screens for interview analysis, HR radar and platform management.
   They explicitly identify disconnected functionality.
 - Typed adapter boundaries for future Huntflow and backend integrations.
@@ -49,7 +50,10 @@ Handoff date: 2026-08-16.
   must be replaced by server-validated Auth plus database RLS.
 - Mock request data is in process memory and resets when the server restarts.
 - The Offer Center prototype is client-only: changing or refreshing the page discards
-  the draft. Printing uses the browser's native dialog.
+  the draft. PDF/PNG/PPTX are rendered from the same fixed 569 × 1013 page DOM; export is
+  blocked when text overflows instead of silently shrinking fonts.
+- PPTX uses a full-slide image per page for exact visual parity. Its text is intentionally
+  not editable in this prototype.
 - Huntflow adapters intentionally expose single-object references only. Do not add
   vacancy or candidate list pages to this portal.
 - Placeholder functionality must remain clearly marked until a real backend path is
@@ -63,6 +67,6 @@ Handoff date: 2026-08-16.
     pnpm test
     pnpm build
 
-At handoff the expected result is: lint passes, 63 tests pass, and the production
+At handoff the expected result is: lint passes, 67 tests pass, and the production
 build succeeds. The receiving agent must rerun these checks and report the actual
 result before making material changes.

@@ -52,9 +52,10 @@ Exit: integrations save clicks without duplicating Huntflow's ATS data model.
 
 ## Phase 4 — Offer Center
 
-- [x] Build a synthetic-data form, live one-page preview, explicit human check and
-  browser print/save-to-PDF prototype for product-owner testing.
-- Create versioned templates and role-task page support.
+- [x] Build the supplied field model, fixed cover/task pages, optional task results,
+  assigned-request prefill, explicit human check and direct PDF/PNG/PPTX downloads for
+  product-owner testing.
+- Create durable versioned templates and persistence for approved artifacts.
 - Parse a free-form recruiter brief into structured fields with a review screen.
 - Validate required fields and highlight uncertainty; never invent compensation or
   legal terms.

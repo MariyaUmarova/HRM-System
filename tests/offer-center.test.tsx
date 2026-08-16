@@ -1,62 +1,127 @@
-import { fireEvent, render, screen } from "@testing-library/react";
+import { fireEvent, render, screen, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
-import { afterEach, describe, expect, it, vi } from "vitest";
+import { beforeEach, describe, expect, it } from "vitest";
 import { OfferCenterBuilder } from "@/components/offer-center/OfferCenterBuilder";
+import {
+  getMissingFields,
+  getOfferPages,
+  INITIAL_DRAFT,
+  type OfferDraft,
+} from "@/components/offer-center/offer-model";
+import { __resetStoreForTests } from "@/lib/adapters/requests.store";
 
-afterEach(() => {
-  vi.restoreAllMocks();
+beforeEach(() => {
+  window.localStorage.clear();
+  __resetStoreForTests();
+});
+
+describe("offer model", () => {
+  it("treats an expected result as optional", () => {
+    expect(getMissingFields(INITIAL_DRAFT)).not.toContain("ожидаемый результат");
+  });
+
+  it("requires a task only when a result was entered for it", () => {
+    const draft: OfferDraft = {
+      ...INITIAL_DRAFT,
+      tasks: [{ id: "result-only", task: "", result: "Готово" }],
+    };
+    expect(getMissingFields(draft)).toContain(
+      "задача для заполненного ожидаемого результата",
+    );
+  });
+
+  it("creates continuation pages without changing task content", () => {
+    const draft: OfferDraft = {
+      ...INITIAL_DRAFT,
+      tasks: Array.from({ length: 5 }, (_, index) => ({
+        id: `task-${index}`,
+        task: `Задача ${index + 1}`,
+        result: "",
+      })),
+    };
+    expect(getOfferPages(draft).map((page) => page.length)).toEqual([4, 1]);
+  });
 });
 
 describe("OfferCenterBuilder", () => {
-  it("shows the synthetic draft in a live one-page preview", () => {
+  it("shows a fixed first page and a separate tasks page", () => {
     render(<OfferCenterBuilder />);
 
-    expect(screen.getByLabelText("Предпросмотр оффера")).toHaveTextContent("Алексей, привет!");
-    expect(screen.getByLabelText("Предпросмотр оффера")).toHaveTextContent("ПРОДУКТОВЫЙ АНАЛИТИК");
-    expect(screen.getByText("Прототип · 1 страница")).toBeInTheDocument();
+    expect(screen.getByLabelText("Предпросмотр оффера, страница 1")).toHaveTextContent(
+      "Алексей, привет!",
+    );
+    const tasksPage = screen.getByLabelText("Предпросмотр оффера, страница 2");
+    expect(tasksPage).toHaveTextContent("Твои задачи");
+    expect(tasksPage).toHaveTextContent("Тестовая задача без ожидаемого результата");
+    expect(within(tasksPage).getAllByText("Задача")).toHaveLength(2);
+    expect(within(tasksPage).getAllByText("Ожидаемый результат")).toHaveLength(1);
   });
 
-  it("updates the preview when a recruiter edits a field", async () => {
+  it("keeps the task label when an optional result stays empty", async () => {
     const user = userEvent.setup();
     render(<OfferCenterBuilder />);
 
-    const candidateInput = screen.getByRole("textbox", { name: "Имя кандидата" });
-    await user.clear(candidateInput);
-    await user.type(candidateInput, "Марина");
+    const taskInputs = screen.getAllByRole("textbox", { name: "Задача" });
+    await user.clear(taskInputs[0]);
+    await user.type(taskInputs[0], "Задача без результата");
 
-    expect(screen.getByLabelText("Предпросмотр оффера")).toHaveTextContent("Марина, привет!");
+    const tasksPage = screen.getByLabelText("Предпросмотр оффера, страница 2");
+    expect(tasksPage).toHaveTextContent("Задача без результата");
+    expect(within(tasksPage).getAllByText("Задача")).toHaveLength(2);
   });
 
-  it("requires an explicit human check before opening print", async () => {
+  it("prefills only position and department from an assigned request", async () => {
     const user = userEvent.setup();
-    const printSpy = vi.spyOn(window, "print").mockImplementation(() => undefined);
     render(<OfferCenterBuilder />);
 
-    const printButton = screen.getByRole("button", { name: "Печать / сохранить PDF" });
-    expect(printButton).toBeDisabled();
+    await user.selectOptions(screen.getByLabelText("Заявка в поиске"), "req-3");
+
+    expect(screen.getByRole("textbox", { name: "Должность" })).toHaveValue(
+      "Инженер техподдержки 2-й линии",
+    );
+    expect(screen.getByRole("textbox", { name: "Подразделение" })).toHaveValue(
+      "Инфраструктура",
+    );
+    expect(screen.getByRole("textbox", { name: "Имя кандидата" })).toHaveValue("Алексей");
+  });
+
+  it("requires a human check before enabling every export", async () => {
+    const user = userEvent.setup();
+    render(<OfferCenterBuilder />);
+
+    const pdf = screen.getByRole("button", { name: "Скачать PDF" });
+    const png = screen.getByRole("button", { name: "Все страницы PNG" });
+    const pptx = screen.getByRole("button", { name: "Скачать PPTX" });
+    expect(pdf).toBeDisabled();
+    expect(png).toBeDisabled();
+    expect(pptx).toBeDisabled();
 
     await user.click(
       screen.getByRole("checkbox", {
-        name: /Я проверил\(а\) имя, должность, даты, формат работы и условия оплаты/,
+        name: /Я проверил\(а\) все страницы, даты, формат работы, оплату и задачи/,
       }),
     );
 
-    expect(printButton).toBeEnabled();
-    await user.click(printButton);
-    expect(printSpy).toHaveBeenCalledOnce();
+    expect(pdf).toBeEnabled();
+    expect(png).toBeEnabled();
+    expect(pptx).toBeEnabled();
   });
 
-  it("blocks print and explains which required field is missing", () => {
+  it("blocks export and identifies a missing required field", () => {
     render(<OfferCenterBuilder />);
 
-    fireEvent.change(screen.getByRole("textbox", { name: "Оклад" }), { target: { value: "" } });
+    fireEvent.change(screen.getByRole("textbox", { name: "Основной блок" }), {
+      target: { value: "" },
+    });
     fireEvent.click(
       screen.getByRole("checkbox", {
-        name: /Я проверил\(а\) имя, должность, даты, формат работы и условия оплаты/,
+        name: /Я проверил\(а\) все страницы, даты, формат работы, оплату и задачи/,
       }),
     );
 
-    expect(screen.getByRole("button", { name: "Печать / сохранить PDF" })).toBeDisabled();
-    expect(screen.getByRole("status")).toHaveTextContent("Осталось заполнить: оклад.");
+    expect(screen.getByRole("button", { name: "Скачать PDF" })).toBeDisabled();
+    expect(screen.getByRole("status")).toHaveTextContent(
+      "Осталось заполнить: основной блок оплаты.",
+    );
   });
 });

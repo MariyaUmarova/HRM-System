@@ -70,9 +70,10 @@ home.
 - The product owner's 2026 Ivideon offer PDF is the current visual reference. The
   filled source file and its personal data must not be committed; development and
   previews use synthetic values only.
-- The current browser-print implementation is a testable prototype. Final pagination,
-  legal copy and brand fidelity require product-owner review before persistence or
-  automated delivery is connected.
+- The current client-side PDF/PNG/PPTX implementation is a testable prototype. Every
+  format uses the same fixed visual pages; PPTX pages are full-slide images for fidelity.
+  Final legal copy and brand fidelity still require product-owner review before
+  persistence or automated delivery is connected.
 
 ## UX and content
 
