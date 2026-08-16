@@ -585,7 +585,7 @@ function toArrayBuffer(bytes: Uint8Array): ArrayBuffer {
   return copy.buffer;
 }
 
-async function makeZip(files: Array<{ name: string; blob: Blob }>): Promise<Blob> {
+export async function buildStoredZip(files: Array<{ name: string; blob: Blob }>): Promise<Blob> {
   const encoder = new TextEncoder();
   const locals: Uint8Array[] = [];
   const centrals: Uint8Array[] = [];
@@ -663,7 +663,7 @@ function jpegBytes(dataUrl: string): Uint8Array {
   return bytes;
 }
 
-function makePdf(canvases: HTMLCanvasElement[]): Blob {
+export function buildRasterPdf(canvases: HTMLCanvasElement[]): Blob {
   const encoder = new TextEncoder();
   const chunks: Uint8Array[] = [];
   const offsets: number[] = [0];
@@ -780,7 +780,7 @@ export async function exportOffer(
   const canvases = await renderPages(draft);
 
   if (kind === "pdf") {
-    downloadBlob(makePdf(canvases), `${fileName}.pdf`);
+    downloadBlob(buildRasterPdf(canvases), `${fileName}.pdf`);
     return;
   }
 
@@ -792,7 +792,7 @@ export async function exportOffer(
         blob: await canvasBlob(canvases[index]),
       });
     }
-    downloadBlob(await makeZip(files), `${fileName}_PNG.zip`);
+    downloadBlob(await buildStoredZip(files), `${fileName}_PNG.zip`);
     return;
   }
 

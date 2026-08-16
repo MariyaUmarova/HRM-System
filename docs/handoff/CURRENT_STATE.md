@@ -67,6 +67,6 @@ Handoff date: 2026-08-16.
     pnpm test
     pnpm build
 
-At handoff the expected result is: lint passes, 67 tests pass, and the production
+At handoff the expected result is: lint passes, 69 tests pass, and the production
 build succeeds. The receiving agent must rerun these checks and report the actual
 result before making material changes.

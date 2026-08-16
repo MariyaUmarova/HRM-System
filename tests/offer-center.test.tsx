@@ -3,6 +3,10 @@ import userEvent from "@testing-library/user-event";
 import { beforeEach, describe, expect, it } from "vitest";
 import { OfferCenterBuilder } from "@/components/offer-center/OfferCenterBuilder";
 import {
+  buildRasterPdf,
+  buildStoredZip,
+} from "@/components/offer-center/offer-export";
+import {
   getMissingFields,
   getOfferPages,
   INITIAL_DRAFT,
@@ -40,6 +44,33 @@ describe("offer model", () => {
       })),
     };
     expect(getOfferPages(draft).map((page) => page.length)).toEqual([4, 1]);
+  });
+});
+
+describe("offer export containers", () => {
+  it("builds a readable stored ZIP with every supplied filename", async () => {
+    const archive = await buildStoredZip([
+      { name: "offer_1.png", blob: new Blob(["page-one"]) },
+      { name: "offer_2.png", blob: new Blob(["page-two"]) },
+    ]);
+    const bytes = new Uint8Array(await archive.arrayBuffer());
+    expect(Array.from(bytes.slice(0, 4))).toEqual([0x50, 0x4b, 0x03, 0x04]);
+    const content = new TextDecoder().decode(bytes);
+    expect(content).toContain("offer_1.png");
+    expect(content).toContain("offer_2.png");
+  });
+
+  it("builds a two-page PDF with a valid header and page tree", async () => {
+    const canvas = document.createElement("canvas");
+    canvas.width = 1707;
+    canvas.height = 3039;
+    canvas.toDataURL = () => "data:image/jpeg;base64,/9j/2Q==";
+    const pdf = buildRasterPdf([canvas, canvas]);
+    const content = new TextDecoder().decode(new Uint8Array(await pdf.arrayBuffer()));
+    expect(content.startsWith("%PDF-1.4")).toBe(true);
+    expect(content).toContain("/Count 2");
+    expect(content).toContain("/MediaBox");
+    expect(content.endsWith("%%EOF")).toBe(true);
   });
 });
 
