@@ -3,16 +3,21 @@ import userEvent from "@testing-library/user-event";
 import { describe, expect, it, vi } from "vitest";
 import { InterviewAnalysisPrototype } from "@/components/interview-analysis/InterviewAnalysisPrototype";
 
+async function showSyntheticResult(user: ReturnType<typeof userEvent.setup>) {
+  await user.click(screen.getByRole("button", { name: "Загрузить тестовый пример" }));
+  await user.click(screen.getByRole("button", { name: /3 Контекст и результат/ }));
+  await user.click(screen.getByRole("button", { name: "Показать тестовый результат" }));
+}
+
 describe("InterviewAnalysisPrototype", () => {
   it("shows an evidence-linked synthetic result without claiming that AI ran", async () => {
     const user = userEvent.setup();
     render(<InterviewAnalysisPrototype />);
 
-    await user.click(screen.getByRole("button", { name: "Загрузить тестовый пример" }));
-    await user.click(screen.getByRole("button", { name: "Показать тестовый результат" }));
+    await showSyntheticResult(user);
 
     expect(screen.getByText("Синтетический тестовый результат")).toBeInTheDocument();
-    expect(screen.getAllByText(/Доказательство из заметок:/)).toHaveLength(4);
+    expect(screen.getAllByText(/Доказательство из материала:/)).toHaveLength(4);
     expect(screen.getByRole("status")).toHaveTextContent(
       "Это не ответ AI и не рекомендация по найму",
     );
@@ -22,8 +27,10 @@ describe("InterviewAnalysisPrototype", () => {
     const user = userEvent.setup();
     render(<InterviewAnalysisPrototype />);
 
-    await user.type(screen.getByRole("textbox", { name: "Заметки или транскрипт" }), "Новые заметки");
     await user.type(screen.getByRole("textbox", { name: "Критерии вакансии" }), "Новый критерий");
+    await user.click(screen.getByRole("button", { name: /2 Материалы/ }));
+    await user.type(screen.getByRole("textbox", { name: "Заметки или транскрипт" }), "Новые заметки");
+    await user.click(screen.getByRole("button", { name: "Перейти к контексту" }));
     await user.click(screen.getByRole("button", { name: "Показать тестовый результат" }));
 
     expect(screen.queryByText("Синтетический тестовый результат")).not.toBeInTheDocument();
@@ -32,12 +39,48 @@ describe("InterviewAnalysisPrototype", () => {
     );
   });
 
+  it("accepts combined text, audio and video input modes without uploading file contents", async () => {
+    const user = userEvent.setup();
+    render(<InterviewAnalysisPrototype />);
+
+    await user.click(screen.getByRole("button", { name: /2 Материалы/ }));
+    await user.click(screen.getByRole("checkbox", { name: /Аудиозапись/ }));
+    await user.click(screen.getByRole("checkbox", { name: /Видеозапись/ }));
+
+    const input = screen.getByLabelText("Аудио или видеозапись");
+    const audio = new File(["audio"], "interview.mp3", { type: "audio/mpeg" });
+    const video = new File(["video"], "interview.mp4", { type: "video/mp4" });
+    await user.upload(input, [audio, video]);
+
+    expect(screen.getByText("interview.mp3")).toBeInTheDocument();
+    expect(screen.getByText("interview.mp4")).toBeInTheDocument();
+    expect(screen.getByText(/транскрибация, разделение спикеров/)).toBeInTheDocument();
+    expect(screen.getByText(/аудиодорожка плюс проверяемые наблюдения/)).toBeInTheDocument();
+    expect(screen.getByRole("status")).toHaveTextContent(
+      "содержимое файла никуда не загружено",
+    );
+  });
+
+  it("rejects unsupported media formats clearly", async () => {
+    const user = userEvent.setup({ applyAccept: false });
+    render(<InterviewAnalysisPrototype />);
+
+    await user.click(screen.getByRole("button", { name: /2 Материалы/ }));
+    await user.click(screen.getByRole("checkbox", { name: /Аудиозапись/ }));
+    await user.upload(
+      screen.getByLabelText("Аудио или видеозапись"),
+      new File(["data"], "interview.zip", { type: "application/zip" }),
+    );
+
+    expect(screen.getByRole("status")).toHaveTextContent("Формат не поддерживается");
+    expect(screen.queryByText("interview.zip")).not.toBeInTheDocument();
+  });
+
   it("requires a fresh human confirmation after the result is edited", async () => {
     const user = userEvent.setup();
     render(<InterviewAnalysisPrototype />);
 
-    await user.click(screen.getByRole("button", { name: "Загрузить тестовый пример" }));
-    await user.click(screen.getByRole("button", { name: "Показать тестовый результат" }));
+    await showSyntheticResult(user);
 
     const confirmation = screen.getByRole("checkbox", {
       name: /Я проверил\(а\) факты, выводы, доказательства, риски/,
@@ -58,8 +101,7 @@ describe("InterviewAnalysisPrototype", () => {
     const writeText = vi.spyOn(navigator.clipboard, "writeText").mockResolvedValue(undefined);
     render(<InterviewAnalysisPrototype />);
 
-    await user.click(screen.getByRole("button", { name: "Загрузить тестовый пример" }));
-    await user.click(screen.getByRole("button", { name: "Показать тестовый результат" }));
+    await showSyntheticResult(user);
     await user.click(
       screen.getByRole("checkbox", {
         name: /Я проверил\(а\) факты, выводы, доказательства, риски/,

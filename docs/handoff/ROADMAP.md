@@ -74,7 +74,10 @@ Exit: the recruiter prepares a correct, reviewable approval package with minimal
 
 - [x] Build a client-only contract prototype on synthetic data: evidence-linked facts,
   conclusions, risks and questions, editable Huntflow draft and explicit human check.
-- Accept authorized interview material and apply retention/redaction rules.
+- [x] Add the HTML-reference input variants: full transcript, short summary, notes,
+  other feedback, audio and video, with combinable sources and format validation.
+- Connect approved cloud transcription/video processing; define retention, redaction,
+  access and deletion rules before accepting real interview material.
 - Produce evidence-linked structured analysis with human approval.
 - Export the approved result to Huntflow.
 - Build search strategy help: role map, sourcing channels, Boolean queries and a short
@@ -90,12 +93,14 @@ content.
   source links, saved items, freshness labels and explicit source-health notes.
 - [x] Ingest the first permitted RSS source (Mintrud document feed) into a private
   review queue on a daily 09:00 MSK schedule.
-- Add approved automatic adapters for hh.ru, CIPD and later sources. Respect source
-  terms and copyright.
+- [x] Add daily ChatGPT web discovery for Russian and international sources from the
+  latest 72 hours, with Russian summaries and source links written as pending review.
+- Add direct automatic adapters for sources where a stable permitted feed/API is useful.
+  Respect source terms and copyright.
 - [x] Deduplicate discovered Mintrud links and keep source attribution.
-- Add reviewed summaries/classification for additional sources; AI must never publish
+- [x] Add AI summaries/classification for discovered sources; AI never publishes
   automatically.
-- Use Perplexity/web search as a discovery layer, not as an unverified database.
+- [x] Use web search as a discovery layer, not as an unverified database.
 - Add editorial review, freshness indicators and source health monitoring.
 - Add knowledge content ownership, revision history and stale-content reminders.
 
