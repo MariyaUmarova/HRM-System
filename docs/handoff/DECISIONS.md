@@ -98,14 +98,29 @@ home.
 - Use least privilege, audit sensitive actions and encrypt data in transit and at rest.
 
 
+## Interview material processing
+
+- The input may combine a full transcript, a short summary, recruiter notes, feedback
+  from other interviewers, audio and video.
+- Audio processing means transcription and optional speaker diarization before the same
+  evidence-linked analysis. Video processing separates the audio track and limited,
+  reviewable observations from key frames.
+- The product must not infer emotions, personality, honesty or protected traits from a
+  face or voice.
+- Real candidate media cannot be accepted until a cloud processor, private storage,
+  retention/deletion period, role access and audit trail are approved.
+- The current preview validates formats but does not read or upload selected media.
+
 ## HR Radar automation
 
 - Automatic discovery runs every day at 09:00 Moscow time.
 - A newly discovered link is stored as `pending_review` and is never published
   automatically.
-- The first automatic adapter is the public Mintrud document RSS feed. hh.ru and CIPD
-  remain manual until a permitted, stable connector is approved.
-- The ingestion service stores source metadata, title, date and canonical link, not a
-  full copied article.
-- AI summarization is a separate later step and requires editorial confirmation before
-  publication.
+- The first direct adapter is the public Mintrud document RSS feed.
+- A ChatGPT scheduled task with web search checks Russian and international public
+  sources from the latest 72 hours, writes Russian summaries through the connected
+  Supabase tool and does not require an OpenAI API key.
+- Search and summaries are a discovery layer, not a publication authority. HR review
+  is mandatory before a card becomes visible.
+- The ingestion flow stores source metadata, title, date, canonical link, short summary,
+  relevance and tags, not a full copied article.

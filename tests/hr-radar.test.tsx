@@ -16,8 +16,9 @@ describe("HR news data", () => {
     expect(HR_NEWS_ITEMS.every((item) => item.source && item.publishedLabel)).toBe(true);
   });
 
-  it("marks only the connected RSS source as automatic", () => {
+  it("distinguishes the direct RSS adapter from ChatGPT web discovery", () => {
     expect(HR_NEWS_SOURCES.filter((source) => source.updateMode === "Автоматически")).toHaveLength(1);
+    expect(HR_NEWS_SOURCES.filter((source) => source.updateMode === "Через веб-поиск")).toHaveLength(2);
     expect(HR_NEWS_SOURCES.find((source) => source.name === "Минтруд России")?.updateMode).toBe(
       "Автоматически",
     );
@@ -43,7 +44,8 @@ describe("HrRadar", () => {
     expect(
       screen.getByText(/Новые ссылки сначала попадают в закрытую очередь «На проверке»/),
     ).toBeInTheDocument();
-    expect(screen.getByText(/AI-суммаризация не включена/)).toBeInTheDocument();
+    expect(screen.getByText(/ChatGPT с веб-поиском проверяют/)).toBeInTheDocument();
+    expect(screen.getByText(/не публикуются автоматически/)).toBeInTheDocument();
   });
 
   it("filters the feed by topic and text without hiding attribution", async () => {

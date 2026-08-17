@@ -23,14 +23,16 @@ Handoff date: 2026-08-17.
   prefill, required human confirmation and direct PDF/PNG/PPTX downloads.
 - Offer payments support an optional introduction, combined recurring bonuses (including
   monthly) and a separate hourly KPI supplement; short task lists fit up to five cards per page.
-- Interactive Interview Analysis contract prototype with a synthetic source, vacancy
-  criteria, editable facts/conclusions/risks/questions, evidence links, a reviewable
-  Huntflow comment draft and mandatory human confirmation.
+- Interactive Interview Analysis contract prototype with staged vacancy/material/context
+  input, combinable transcript, short-summary, notes, feedback, audio and video sources,
+  format validation, editable evidence-linked results, a reviewable Huntflow comment
+  draft and mandatory human confirmation.
 - Interactive HR Radar with a manually reviewed, attributed public-source news set,
   text/topic filters, per-tab saved items, freshness labels and source-control notes.
-- Supabase-backed HR Radar ingestion foundation: a daily 09:00 MSK job, an allowlisted
-  Mintrud RSS adapter, URL deduplication, a private editorial queue and run history.
-  Newly discovered links are never published automatically.
+- Supabase-backed HR Radar ingestion foundation: an allowlisted Mintrud RSS adapter,
+  URL deduplication, a private editorial queue and run history. A ChatGPT scheduled task
+  runs daily at 09:00 MSK, searches Russian and international public sources for the
+  latest 72 hours, prepares Russian summaries and writes only pending-review records.
 - Interactive platform-management prototype for Head of Recruitment and HRD: exact
   @ivideon.com validation, Recruiter/Customer invitation roles, required department
   and position for Customers, and transparent client-only invitation drafts.
@@ -50,9 +52,11 @@ Handoff date: 2026-08-17.
 - Production hosting and domain.
 - Huntflow API synchronization.
 - Gmail or Yandex Mail integration.
-- AI parsing, interview analysis or spelling correction.
-- Perplexity and AI news summarization; hh.ru and CIPD do not yet have approved
-  automatic adapters.
+- Real AI interview processing, media transcription, video-frame analysis or spelling
+  correction. The interface and validation contract are ready, but no candidate media
+  is uploaded.
+- Editorial approval UI for the ChatGPT-discovered HR news queue; direct source-specific
+  adapters beyond the existing Mintrud RSS remain unapproved.
 - Server-side offer rendering, durable storage, immutable versioning and email
   dispatch.
 - Production audit log, observability, queues and background jobs.
@@ -70,11 +74,14 @@ Handoff date: 2026-08-17.
   not editable in this prototype.
 - Huntflow adapters intentionally expose single-object references only. Do not add
   vacancy or candidate list pages to this portal.
-- The Interview Analysis prototype is client-only and accepts only its supplied
-  synthetic example. It does not call AI, persist content or write to Huntflow.
-- HR Radar shows only editor-approved seed cards. Supabase automatically checks the
-  allowlisted Mintrud RSS at 09:00 MSK and stores only metadata in a private
-  `pending_review` queue; it does not call Perplexity/AI or persist saved items.
+- The Interview Analysis prototype accepts combinations of text, audio and video input
+  modes, but processes only its supplied synthetic text example. Media selection stores
+  metadata in the browser only; file contents are not read, uploaded or persisted.
+  A real cloud provider, retention period and access policy still require approval.
+- HR Radar shows only editor-approved seed cards. Supabase checks the allowlisted
+  Mintrud RSS, while a ChatGPT scheduled task performs daily web discovery for the latest
+  72 hours and creates Russian summaries. Both paths write only to the private
+  `pending_review` queue; saved items are not persisted.
 - The HR Radar database tables have RLS and no `anon`/`authenticated` table grants.
   The scheduled Edge Function uses a per-environment Vault secret whose hash is stored
   separately; the raw secret is not committed.
