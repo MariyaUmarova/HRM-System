@@ -42,7 +42,7 @@ describe("HrRadar", () => {
       HR_NEWS_ITEMS.length,
     );
     expect(
-      screen.getByText(/Новые ссылки сначала попадают в закрытую очередь «На проверке»/),
+      screen.getByText(/Русская выжимка и исходная ссылка сначала/),
     ).toBeInTheDocument();
     expect(screen.getByText(/ChatGPT с веб-поиском проверяют/)).toBeInTheDocument();
     expect(screen.getByText(/не публикуются автоматически/)).toBeInTheDocument();
