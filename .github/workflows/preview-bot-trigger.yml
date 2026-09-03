@@ -1,0 +1,26 @@
+name: Preview bot trigger
+
+on:
+  push:
+    branches:
+      - preview/pr16-bot-trigger
+
+permissions:
+  contents: write
+
+jobs:
+  bot-commit:
+    if: github.actor != 'github-actions[bot]'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Create bot-owned preview trigger commit
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          printf 'PR16 preview source: %s\n' "${GITHUB_SHA}" > .preview-trigger
+          git add .preview-trigger
+          git commit -m "chore: trigger Vercel preview via GitHub Actions bot"
+          git push origin HEAD:preview/pr16-bot-trigger
