@@ -1,5 +1,9 @@
 import fs from "node:fs";
 import path from "node:path";
+import {
+  getUploadedRecruitOverrides,
+  UPLOADED_RECRUIT_REMOVED_IDS,
+} from "./uploaded-overrides";
 import type {
   RecruitArticle,
   RecruitChecklist,
@@ -13,11 +17,12 @@ import type {
 } from "./types";
 
 /**
- * Content authority for the Recruit experience.
+ * Historical baseline for the Recruit experience.
  *
- * Do not rewrite or "improve" text here. The standalone HTML is intentionally
- * parsed as the source so wording, playbooks, scripts and checklists stay verbatim.
- * Product-only filtering below removes sections explicitly excluded from the HR Hub IA.
+ * The Product Owner's 2026-09-03 attachment is the wording authority. A deterministic
+ * comparison proved that 106 selected objects are identical to this v7.4 baseline;
+ * the 21 objects that differ are replaced below by attachment-derived overrides and
+ * three historical-only objects are removed. Do not rewrite or "improve" this copy.
  */
 export const RECRUIT_SOURCE_RELATIVE_PATH =
   "docs/references/v7_4/ivideon-recruit-standalone-v7_4.html";
@@ -229,10 +234,9 @@ const ADAPTATION_SCRIPT_IDS = new Set([
 const ADAPTATION_CHECKLIST_IDS = new Set(["first-day-checklist", "adaptation-risk-checklist"]);
 const INCLUDED_TEMPLATE_IDS = new Set(["offer-template", "recruitment-request", "recruitment-source"]);
 const INCLUDED_TOOL_IDS = new Set(["candidate-interview-analyzer", "offer-builder"]);
+const EMPTY_IDS = new Set<string>();
 
 function sanitiseTemplate(template: RecruitTemplate): RecruitTemplate {
-  // The Offer constructor is a working HR Hub helper, so the multi-megabyte data URI
-  // from the old standalone prototype is deliberately not shipped into page payloads.
   const file = template.file?.startsWith("data:") ? undefined : template.file;
   return {
     ...template,
@@ -244,20 +248,45 @@ function sanitiseTemplate(template: RecruitTemplate): RecruitTemplate {
   };
 }
 
+function applyAttachmentDelta<T extends { id: string }>(
+  baseline: T[],
+  overrides: T[],
+  removedIds: ReadonlySet<string> = EMPTY_IDS,
+): T[] {
+  const overridesById = new Map(overrides.map((item) => [item.id, item]));
+  return baseline
+    .filter((item) => !removedIds.has(item.id))
+    .map((item) => overridesById.get(item.id) ?? item);
+}
+
 export function getRecruitContent(): RecruitContentSnapshot {
   if (cachedSnapshot) return cachedSnapshot;
 
-  const articles = extractWindowArray<RecruitArticle>("ARTICLES").filter(
-    (item) => item.category !== "Адаптация",
+  const overrides = getUploadedRecruitOverrides();
+  const articles = applyAttachmentDelta(
+    extractWindowArray<RecruitArticle>("ARTICLES").filter((item) => item.category !== "Адаптация"),
+    overrides.articles,
   );
-  const scenarios = extractWindowArray<RecruitScenario>("SCENARIOS").filter(
-    (item) => item.category !== "Адаптация" && !ADAPTATION_SCENARIO_IDS.has(item.id),
+  const scenarios = applyAttachmentDelta(
+    extractWindowArray<RecruitScenario>("SCENARIOS").filter(
+      (item) => item.category !== "Адаптация" && !ADAPTATION_SCENARIO_IDS.has(item.id),
+    ),
+    overrides.scenarios,
+    UPLOADED_RECRUIT_REMOVED_IDS.scenarios,
   );
-  const scripts = extractWindowArray<RecruitScript>("SCRIPTS").filter(
-    (item) => item.category !== "Адаптация" && !ADAPTATION_SCRIPT_IDS.has(item.id),
+  const scripts = applyAttachmentDelta(
+    extractWindowArray<RecruitScript>("SCRIPTS").filter(
+      (item) => item.category !== "Адаптация" && !ADAPTATION_SCRIPT_IDS.has(item.id),
+    ),
+    overrides.scripts,
+    UPLOADED_RECRUIT_REMOVED_IDS.scripts,
   );
-  const checklists = extractWindowArray<RecruitChecklist>("CHECKLISTS").filter(
-    (item) => !ADAPTATION_CHECKLIST_IDS.has(item.id) && item.stage !== "Адаптация",
+  const checklists = applyAttachmentDelta(
+    extractWindowArray<RecruitChecklist>("CHECKLISTS").filter(
+      (item) => !ADAPTATION_CHECKLIST_IDS.has(item.id) && item.stage !== "Адаптация",
+    ),
+    overrides.checklists,
+    UPLOADED_RECRUIT_REMOVED_IDS.checklists,
   );
   const templates = extractWindowArray<RecruitTemplate>("TEMPLATES")
     .filter((item) => INCLUDED_TEMPLATE_IDS.has(item.id))
