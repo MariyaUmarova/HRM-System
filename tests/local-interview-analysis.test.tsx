@@ -30,6 +30,22 @@ describe("local interview analysis", () => {
     expect(result.risks[0]?.text).toContain("пробел в материале, а не отрицательная оценка кандидата");
   });
 
+  it("excludes sensitive employment criteria from evidence matching and Huntflow output", () => {
+    const result = createLocalInterviewAnalysis({
+      criteria: "Опыт B2B-продаж\nВозраст до 30 лет\nРелигия кандидата",
+      importantChecks: "Семейное положение; Переговоры с ЛПР",
+      notes:
+        "Кандидат: Последние три года я работал в B2B-продажах. Кандидат: Мне 27 лет. Кандидат: Проводил переговоры с директорами компаний.",
+    });
+
+    expect(result.facts.some((item) => item.text.includes("Опыт B2B-продаж"))).toBe(true);
+    expect(result.conclusions.some((item) => /Возраст|Религ/i.test(item.text))).toBe(false);
+    expect(result.questions.some((item) => /Семейное положение/i.test(item.text))).toBe(false);
+    expect(result.risks.some((item) => item.text.includes("Возраст до 30 лет") && item.text.includes("исключён"))).toBe(true);
+    expect(result.risks.some((item) => item.text.includes("Религия кандидата") && item.text.includes("исключён"))).toBe(true);
+    expect(result.huntflowDraft).not.toMatch(/Возраст до 30 лет|Религия кандидата|Семейное положение/i);
+  });
+
   it("analyses arbitrary de-identified text in the browser instead of requiring the fixed demo", async () => {
     const user = userEvent.setup();
     render(<LocalInterviewTextAnalyzer />);
