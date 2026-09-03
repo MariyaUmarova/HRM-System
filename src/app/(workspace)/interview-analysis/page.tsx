@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { AccessDenied } from "@/components/access/AccessDenied";
 import { InterviewAnalysisPrototype } from "@/components/interview-analysis/InterviewAnalysisPrototype";
 import { checkAccess } from "@/lib/auth/require-role";
@@ -11,5 +12,10 @@ export default async function InterviewAnalysisPage() {
     return <AccessDenied requiredRoleLabel={gate.requiredRoleLabel} />;
   }
 
-  return <InterviewAnalysisPrototype />;
+  return (
+    <div>
+      <Link className="rr-back" href="/tools">← Помощники</Link>
+      <InterviewAnalysisPrototype />
+    </div>
+  );
 }
