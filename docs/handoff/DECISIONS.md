@@ -90,13 +90,50 @@ home.
   feature and must not silently alter approved legal/business content.
 - Adaptation-stage content must not be changed without explicit approval.
 
+## Recruit shell and information architecture
+
+- The Ivideon Recruit standalone HTML is the visual and wording reference for the
+  selected Recruit workspace. The HTML is a read-only source; the production
+  application remains a typed Next.js application and must not be replaced by one
+  giant imperative HTML file.
+- Approved standalone wording for the selected Recruit sections is transferred
+  verbatim. AI agents must not silently shorten, rewrite, “improve” or reconcile that
+  copy. Product-required structural changes are recorded explicitly instead.
+- The permanent internal sidebar contains only: Главная; Рабочие ситуации; Скрипты;
+  Шаблоны и чек-листы; Помощники; HR Radar.
+- The full recruiter workflow remains contextual from Главная and keeps the exact
+  approved ten-stage order above even if an older standalone reference used another
+  grouping or order.
+- A separate “База знаний” destination is removed from the target IA. Its relevant
+  content lives contextually in the workflow, playbooks, scripts, templates,
+  checklists and search.
+- “Центр офферов” and “Анализ интервью” are not permanent sidebar items. They remain
+  working routes entered through “Помощники”.
+- “Помощники” currently contains exactly two approved tools: the existing HR Hub
+  Interview Analysis implementation and the existing HR Hub Offer Builder. They must
+  remain functional; decorative cards or reimplemented standalone mock generators are
+  not an acceptable substitute.
+- Constructors do not belong in “Шаблоны и чек-листы”. Constructors live under
+  “Помощники”; templates and checklists remain reference/action materials.
+- Adaptation content is not imported into the new Recruit workspace yet. Stage 10 may
+  remain visible as a process boundary, but the adaptation vertical is backlog until a
+  separate product decision.
+- Existing role/access boundaries, customer requests, weekly focus, HR Radar and
+  Offer/Interview functionality remain part of HR Hub. The redesign must not remove
+  these technical/product capabilities merely because navigation is simplified.
+- Head of Recruitment and HRD access platform management through a compact gear near
+  the profile area. This does not create an Administrator role.
+- New customer requests and team weekly focus remain visible to management on the
+  home screen; “Все заявки заказчиков” remains a contextual management action.
+- Weekly-focus editing by Head of Recruitment / HRD is a follow-up capability and must
+  preserve the same role model when implemented.
+
 ## Data and security
 
 - Use synthetic data during development and demos.
 - Never commit credentials, tokens, real CVs, real offer files or candidate PII.
 - Access control is enforced server-side and with PostgreSQL RLS, not only in UI.
 - Use least privilege, audit sensitive actions and encrypt data in transit and at rest.
-
 
 ## Interview material processing
 
