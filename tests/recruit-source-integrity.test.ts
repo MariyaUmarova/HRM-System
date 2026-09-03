@@ -20,15 +20,35 @@ describe("Recruit standalone source integration", () => {
 
     const vacancy = content.scenarios.find((item) => item.id === "new-vacancy-assigned");
     expect(vacancy?.trigger).toBe("Руководитель подбора официально передал вакансию конкретному рекрутеру.");
-    expect(vacancy?.steps?.[0]).toContain("Подтвердить Руководителю подбора, что вакансия принята");
+    expect(vacancy?.steps?.[0]).toBe(
+      "Подтвердить Руководителю подбора, что вакансия принята, и уточнить ответственного заказчика, подразделение, доступную информацию об условиях и дату активного старта.",
+    );
   });
 
-  it("imports only the two approved working helpers", () => {
+  it("imports only the two approved working helpers with supplied reference copy", () => {
     const content = getRecruitContent();
     expect(content.tools.map((tool) => tool.id).sort()).toEqual([
       "candidate-interview-analyzer",
       "offer-builder",
     ]);
+
+    const interview = content.tools.find((tool) => tool.id === "candidate-interview-analyzer");
+    expect(interview).toMatchObject({
+      title: "ИИ-анализ интервью",
+      description:
+        "Сравнивает транскрипцию, видеоинтервью или заметки рекрутера с профилем вакансии и формирует доказательную оценку кандидата.",
+      buttonLabel: "Проанализировать кандидата",
+      generator: "candidate-analysis",
+    });
+
+    const offer = content.tools.find((tool) => tool.id === "offer-builder");
+    expect(offer).toMatchObject({
+      title: "Конструктор оффера",
+      description:
+        "Формирует готовый оффер Ivideon по корпоративному шаблону: подставляет данные кандидата, условия работы, оклад и бонус.",
+      buttonLabel: "Создать оффер",
+      generator: "offer-builder",
+    });
   });
 
   it("keeps adaptation content out of the imported catalog", () => {
