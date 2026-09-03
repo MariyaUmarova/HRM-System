@@ -7,7 +7,7 @@ import { canAccess, type Role } from "@/lib/auth/roles";
 import { NAV_ITEMS } from "./nav-items";
 
 export function Nav({ role, onNavigate }: { role: Role; onNavigate?: () => void }) {
-  const pathname = usePathname();
+  const pathname = usePathname() ?? "/";
   const items = NAV_ITEMS.filter((item) => canAccess(role, item.area));
 
   return (
