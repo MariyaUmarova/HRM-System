@@ -1,3 +1,5 @@
+import { splitEmploymentCriteria } from "./employment-criteria-guard";
+
 export interface AnalysisItem {
   id: string;
   text: string;
@@ -334,11 +336,18 @@ function inputList(value: string): string[] {
  *
  * This is intentionally NOT an AI/model call. It finds lexical evidence for vacancy
  * criteria, exposes the exact supporting text, and turns missing evidence into questions.
- * It makes the helper useful before the approved corporate AI pipeline exists without
- * pretending that a model evaluated the candidate.
+ * Sensitive employment criteria are excluded before matching and can never become
+ * supporting facts, conclusions or Huntflow criteria.
  */
 export function createLocalInterviewAnalysis(input: LocalInterviewAnalysisInput): InterviewAnalysis {
-  const criteria = inputList(input.criteria);
+  const criteriaSplit = splitEmploymentCriteria(input.criteria);
+  const criteria = criteriaSplit.allowed.slice(0, 12);
+  const checksSplit = splitEmploymentCriteria(input.importantChecks ?? "");
+  const allowedChecks = checksSplit.allowed.slice(0, 12);
+  const blockedCriteria = uniqueStatements([
+    ...criteriaSplit.blocked,
+    ...checksSplit.blocked,
+  ]).slice(0, 12);
   const statements = uniqueStatements([
     ...splitStatements(input.notes ?? ""),
     ...splitStatements(input.summary ?? ""),
@@ -382,10 +391,16 @@ export function createLocalInterviewAnalysis(input: LocalInterviewAnalysisInput)
     basis: `Факт ${Math.min(index + 1, Math.max(1, facts.length))}`,
   }));
 
-  const risks: AnalysisItem[] = unmatched.slice(0, 8).map((item, index) => ({
-    id: `local-risk-${index + 1}`,
-    text: `В переданном тексте не найдено прямого подтверждения критерия «${item.criterion}». Это пробел в материале, а не отрицательная оценка кандидата.`,
+  const risks: AnalysisItem[] = blockedCriteria.map((criterion, index) => ({
+    id: `local-policy-block-${index + 1}`,
+    text: `Критерий «${criterion}» исключён из автоматического сопоставления: чувствительные характеристики нельзя использовать для оценки кандидата.`,
   }));
+  unmatched.slice(0, Math.max(0, 8 - risks.length)).forEach((item, index) => {
+    risks.push({
+      id: `local-risk-${index + 1}`,
+      text: `В переданном тексте не найдено прямого подтверждения критерия «${item.criterion}». Это пробел в материале, а не отрицательная оценка кандидата.`,
+    });
+  });
 
   const questions: AnalysisItem[] = unmatched.slice(0, 8).map((item, index) => ({
     id: `local-question-${index + 1}`,
@@ -393,7 +408,7 @@ export function createLocalInterviewAnalysis(input: LocalInterviewAnalysisInput)
   }));
 
   const existingQuestionText = questions.map((item) => item.text.toLocaleLowerCase("ru-RU")).join(" ");
-  inputList(input.importantChecks ?? "").forEach((check) => {
+  allowedChecks.forEach((check) => {
     if (questions.length >= 10 || existingQuestionText.includes(check.toLocaleLowerCase("ru-RU"))) return;
     questions.push({
       id: `local-question-check-${questions.length + 1}`,
