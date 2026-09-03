@@ -10,6 +10,12 @@
   -webkit-font-smoothing:antialiased;
 }
 .rr-app button,.rr-app input,.rr-app select,.rr-app textarea{font:inherit}
+.rr-app button:focus-visible,
+.rr-app a:focus-visible,
+.rr-app input:focus-visible,
+.rr-app select:focus-visible,
+.rr-app textarea:focus-visible,
+.rr-app summary:focus-visible{outline:3px solid rgba(32,83,248,.28);outline-offset:2px}
 
 .rr-full-route-summary .rr-route-number{width:40px;height:40px}
 .rr-material>span{min-width:0}
