@@ -75,6 +75,19 @@ function extractWindowArray<T>(name: string): T[] {
   return JSON.parse(balancedExpression(html, start, "[", "]")) as T[];
 }
 
+const APPROVED_WORKFLOW_ORDER = [
+  "Получена новая вакансия",
+  "Провожу бриф",
+  "Ищу кандидатов",
+  "Провожу HR-интервью",
+  "Показываю кандидата заказчику",
+  "Провожу совместное интервью с заказчиком",
+  "Согласовываю оффер",
+  "Делаю оффер кандидату",
+  "Готовлю выход сотрудника",
+  "Сопровождаю адаптацию",
+] as const;
+
 function extractWorkflow(): WorkflowRouteStep[] {
   const html = sourceHtml();
   const marker = "const WORKFLOW_ROUTE =";
@@ -86,9 +99,16 @@ function extractWorkflow(): WorkflowRouteStep[] {
 
   // The repository-owned HTML is trusted, read-only product source. vm is used only
   // because WORKFLOW_ROUTE is a JS literal (single quotes), unlike the JSON arrays.
-  return vm.runInNewContext(`(${expression})`, Object.create(null), {
+  const source = vm.runInNewContext(`(${expression})`, Object.create(null), {
     timeout: 1_000,
   }) as WorkflowRouteStep[];
+
+  const byTitle = new Map(source.map((step) => [step.title, step]));
+  return APPROVED_WORKFLOW_ORDER.map((title, index) => {
+    const step = byTitle.get(title);
+    if (!step) throw new Error(`Recruit source is missing approved workflow stage: ${title}`);
+    return { ...step, n: String(index + 1).padStart(2, "0") };
+  });
 }
 
 const ADAPTATION_SCENARIO_IDS = new Set(["first-day", "adaptation-risk"]);
