@@ -1,3 +1,5 @@
+import fs from "node:fs";
+import path from "node:path";
 import { describe, expect, it } from "vitest";
 import { getRecruitContent } from "@/lib/recruit-content/source";
 
@@ -49,6 +51,16 @@ describe("Recruit standalone source integration", () => {
       buttonLabel: "Создать оффер",
       generator: "offer-builder",
     });
+  });
+
+  it("treats the standalone HTML as data and never executes its JavaScript", () => {
+    const source = fs.readFileSync(
+      path.join(process.cwd(), "src/lib/recruit-content/source.ts"),
+      "utf8",
+    );
+    expect(source).not.toContain('from "node:vm"');
+    expect(source).not.toContain("runInNewContext");
+    expect(source).not.toContain("eval(");
   });
 
   it("keeps adaptation content out of the imported catalog", () => {
