@@ -1,0 +1,34 @@
+name: Verify bot Vercel preview
+
+on:
+  push:
+    branches:
+      - preview/pr16-bot-trigger
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Wait for Vercel alias
+        run: sleep 35
+      - name: Verify routes and Recruit content
+        env:
+          BASE_URL: https://hrm-system-git-preview-pr16-bot-trigger-mariya-umarova.vercel.app
+        run: |
+          set -euo pipefail
+          for path in / /tools /interview-analysis /offer-center /scenarios /scripts /templates /hr-radar; do
+            echo "=== $path ==="
+            status=$(curl -L -sS -o page.html -w '%{http_code}' --max-time 30 "$BASE_URL$path")
+            echo "HTTP $status"
+            test "$status" -ge 200 -a "$status" -lt 400
+          done
+          curl -L -sS --max-time 30 "$BASE_URL/" > home.html
+          grep -F 'Что вы делаете сейчас?' home.html
+          grep -F 'Рабочий маршрут' home.html
+          curl -L -sS --max-time 30 "$BASE_URL/tools" > tools.html
+          grep -F 'ИИ-анализ интервью' tools.html
+          grep -F 'Конструктор оффера' tools.html
+          curl -L -sS --max-time 30 "$BASE_URL/interview-analysis" > interview.html
+          grep -F 'локальный предварительный разбор' interview.html
+          curl -L -sS --max-time 30 "$BASE_URL/offer-center" > offer.html
+          grep -F 'Конструктор оффера' offer.html
