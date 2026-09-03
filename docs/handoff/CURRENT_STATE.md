@@ -17,10 +17,18 @@ Handoff date: 2026-09-03.
 - On draft PR #16, the internal Recruit experience uses the Ivideon Recruit standalone
   visual language: fixed 264 px sidebar, sticky global search, blue/white design tokens,
   route cards, playbook details, script cards and responsive mobile navigation.
-- On draft PR #16, selected Recruit text is read directly from the repository-owned
-  `docs/references/v7_4/ivideon-recruit-standalone-v7_4.html` implementation source
-  instead of being manually rewritten. Product filtering removes adaptation content and
-  non-approved constructors while preserving the current ten-stage order.
+- On draft PR #16, selected Recruit content is assembled without AI rewriting from two
+  pinned sources: the repository historical v7.4 standalone for 106 selected objects
+  proven identical to the Product Owner upload, plus an attachment-derived exact delta
+  for the 21 selected objects that differ. Three historical-only objects absent from the
+  uploaded HTML are explicitly removed from runtime.
+- The uploaded Product Owner source identity is pinned as size 8,402,786 bytes,
+  SHA-256 `e20c17fd4521880912fb9fae21e76c0e1ec87a1ffcd81df4a55b1ed20d832bcf`
+  and Git blob SHA-1 `dc3516afbec2020d995d54c90389f5a3b0d9c6aa`. The attachment-derived
+  21-object delta is also hash-pinned and covered by integrity tests.
+- Product filtering removes adaptation content and non-approved constructors while
+  preserving the current approved ten-stage route as an explicit structural override
+  of the uploaded standalone's legacy eight-stage route.
 - On draft PR #16, the target sidebar IA is: Главная, Рабочие ситуации, Скрипты,
   Шаблоны и чек-листы, Помощники and HR Radar. Full workflow, requests, Offer Center,
   Interview Analysis and platform management remain contextual routes rather than
@@ -32,12 +40,18 @@ Handoff date: 2026-09-03.
 - On draft PR #16, “Помощники” contains only the two approved HR Hub tools:
   Interview Analysis and Offer Builder. Both routes are guarded by tests against
   accidental replacement with placeholder screens.
-- Interview Analysis now has a working local evidence-based text mode for arbitrary
+- Interview Analysis has a working local evidence-based text mode for arbitrary
   **synthetic or de-identified** recruiter notes/transcripts. It runs entirely in the
   browser with no API/network request, maps vacancy criteria to direct text evidence,
   turns unsupported criteria into explicit verification gaps/questions, prepares an
   editable Huntflow draft and requires human confirmation before copying. It is
   deliberately labelled as local preliminary analysis, not as a model/AI decision.
+- Sensitive employment criteria are filtered before local interview evidence matching.
+  Criteria involving protected/sensitive characteristics such as age, sex/gender,
+  nationality/ethnicity/race, religion, disability/health/pregnancy, family status,
+  children, sexual orientation, political views or trade-union membership cannot become
+  supporting facts, conclusions, follow-up checks or Huntflow criteria. Blocked criteria
+  are surfaced as excluded rather than evaluated.
 - The existing staged Interview Analysis contract remains available as an advanced
   preview for combined transcript/summary/notes/feedback/audio/video inputs.
 - Adaptation remains visible only as a workflow boundary and is explicitly marked
@@ -70,11 +84,10 @@ Handoff date: 2026-09-03.
 - Automated guardrails for workflow order, role access, customer isolation,
   knowledge integrity, search, requests, tooltips, profile header, offer review,
   interview review, attributed HR news and invitation rules.
-- Draft PR #16 adds content-integrity, safe-parser, helper-route/implementation and
-  local-interview-analysis tests so source wording and working helper boundaries cannot
-  drift silently.
-- Private GitHub source repository MariyaUmarova/HRM-System with the verified
-  baseline on main and GitHub Actions CI.
+- Draft PR #16 adds source/delta integrity, safe-parser, helper-route/implementation,
+  local-interview-analysis and sensitive-employment-criteria tests so source wording,
+  helper behavior and hiring-safety boundaries cannot drift silently.
+- GitHub source repository MariyaUmarova/HRM-System with CI on the current PR stack.
 
 ## Not implemented or connected
 
@@ -112,19 +125,17 @@ Handoff date: 2026-09-03.
 - The standalone file is a read-only content/visual source, not a replacement for the
   Next.js architecture. Server code parses approved arrays from it; client pages receive
   structured typed data.
-- The standalone parser treats the HTML as data only. It does not use `node:vm`,
-  `runInNewContext`, `eval` or otherwise execute JavaScript from the reference file.
-- The standalone HTML uploaded by the Product Owner in the 2026-09-03 chat is not
-  structurally identical to the repository historical v7_4 file. The uploaded file
-  contains an older eight-stage `WORKFLOW_ROUTE` (including a combined “Готовлю и
-  согласовываю оффер” step) and contains additional standalone generators/tools beyond
-  the two currently approved helpers. Therefore visual language and selected wording
-  may be transferred verbatim, while current product decisions explicitly override the
-  old structural model: ten workflow stages, exactly two helpers, adaptation backlog,
-  current roles and Huntflow boundary.
-- Do not describe the repository historical standalone file as byte-identical to the
-  Product Owner upload until that exact uploaded artifact is deliberately stored and
-  versioned in Git. No AI agent may silently reconcile the two sources.
+- The standalone parser treats the historical HTML as data only. It does not use
+  `node:vm`, `runInNewContext`, `eval` or otherwise execute JavaScript from the reference
+  file.
+- The Product Owner upload and repository historical v7.4 file are not byte-identical.
+  A machine comparison of selected collections found 106 identical objects, 21 changed
+  objects and three historical-only objects. Runtime now uses the exact attachment-derived
+  21-object delta for those differences and removes the three historical-only objects.
+- The full 8.4 MB Product Owner HTML artifact is not committed to Git; its identity and
+  selected-content delta are pinned instead. Do not describe the historical v7.4 file as
+  byte-identical to the upload. The approved ten-stage route remains an intentional
+  product override of the upload's legacy eight-stage `WORKFLOW_ROUTE`.
 - The Offer Center prototype is client-only: changing or refreshing the page discards
   the draft. PDF/PNG/PPTX are rendered from the same fixed 569 × 1013 page DOM; export is
   blocked when text overflows instead of silently shrinking fonts.
@@ -132,10 +143,14 @@ Handoff date: 2026-09-03.
   not editable in this prototype.
 - Huntflow adapters intentionally expose single-object references only. Do not add
   vacancy or candidate list pages to this portal.
-- The primary Interview Analysis helper can now process arbitrary synthetic/de-identified
-  text locally and deterministically. It only maps lexical evidence to criteria and
-  explicitly treats missing evidence as a material gap, not a negative candidate
-  judgement. It does not rank candidates, recommend hire/reject or call an external AI.
+- The primary Interview Analysis helper can process arbitrary synthetic/de-identified
+  text locally and deterministically. It only maps lexical evidence to allowed job
+  criteria and explicitly treats missing evidence as a material gap, not a negative
+  candidate judgement. It does not rank candidates, recommend hire/reject or call an
+  external AI.
+- Sensitive employment criteria are excluded in the analysis model itself, not merely
+  hidden by UI. A regression test verifies that they cannot enter conclusions or the
+  Huntflow draft.
 - The advanced Interview Analysis prototype accepts combinations of text, audio and
   video input modes. Audio/video selection stores metadata in the browser only; file
   contents are not read, uploaded or persisted. A real cloud provider, retention period,
@@ -155,22 +170,26 @@ Handoff date: 2026-09-03.
 
 ## Verification on PR #16
 
-Verified on head `11fa082b3d7be0d50e6a67272645ce8c01a0877d`:
+Verified on head `dee826747f3277aaf39a346e97d1ee7c73648cd8` in GitHub Actions run #63:
 
-    pnpm lint   -> success
-    pnpm test   -> 109/109 passed across 18 test files
+    pnpm lint   -> success (0 errors; 7 non-blocking warnings)
+    pnpm test   -> 114/114 passed across 19 test files
     pnpm build  -> success, 65/65 static pages generated
 
 Focused verification on the same head:
 
 - `offer-center.test.tsx` — 17/17 passed.
 - `interview-analysis.test.tsx` — 6/6 passed.
-- `local-interview-analysis.test.tsx` — 3/3 passed.
+- `local-interview-analysis.test.tsx` — 4/4 passed, including sensitive-criteria exclusion.
 - `recruit-source-integrity.test.ts` — 5/5 passed.
+- `recruit-uploaded-delta.test.ts` — 4/4 passed.
 - `recruit-helper-links.test.ts` — 4/4 passed.
 
 Any later head must rerun all three baseline checks before review/merge.
 
-Vercel Preview is currently blocked by Vercel team membership/identity for the commit
-author, not by a demonstrated application build failure. Treat browser UAT as pending
-until that access issue is resolved.
+Vercel status for this head is `success` and the deployment is reported Ready at:
+`https://hrm-system-git-codex-recruit-html-shell-mariya-umarova.vercel.app`.
+Browser UAT is still pending because that Preview is protected by Vercel Authentication
+for the `MariyaUmarova` team. The currently connected Vercel account belongs to another
+team and cannot generate a temporary share URL for this protected deployment. Do not
+weaken production protection as a workaround.
