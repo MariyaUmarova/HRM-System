@@ -1,0 +1,43 @@
+name: Generate Recruit hash manifest
+
+on:
+  push:
+    branches:
+      - preview/vercel-pr16-uziuzborn
+    paths:
+      - .github/workflows/generate-recruit-hash-manifest.yml
+
+permissions:
+  contents: write
+
+jobs:
+  generate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Build canonical per-item hashes
+        run: |
+          node <<'NODE'
+          const fs = require('node:fs');
+          const crypto = require('node:crypto');
+          const data = JSON.parse(fs.readFileSync('src/lib/recruit-content/generated-preview.json', 'utf8'));
+          const sha = (value) => crypto.createHash('sha256').update(JSON.stringify(value)).digest('hex');
+          const collections = ['articles', 'scenarios', 'scripts', 'templates', 'checklists', 'tools'];
+          const manifest = {
+            workflow: sha(data.workflow),
+            collections: {},
+          };
+          for (const collection of collections) {
+            manifest.collections[collection] = Object.fromEntries(
+              data[collection].map((item) => [item.id, sha(item)]),
+            );
+          }
+          fs.writeFileSync('src/lib/recruit-content/historical-manifest.json', `${JSON.stringify(manifest, null, 2)}\n`);
+          NODE
+      - name: Commit manifest
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add src/lib/recruit-content/historical-manifest.json
+          git commit -m 'chore: generate historical Recruit content manifest'
+          git push
