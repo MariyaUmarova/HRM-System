@@ -29,10 +29,17 @@ Handoff date: 2026-09-03.
   a profile-area gear icon; there is still no separate Administrator role.
 - On draft PR #16, global Recruit search, playbook/script filtering, script copy actions
   and interactive checklist completion work in React/Next.js.
-- On draft PR #16, “Помощники” contains only the two approved existing HR Hub tools:
-  Interview Analysis routes to the current `InterviewAnalysisPrototype`, and Offer
-  Builder routes to the current `OfferCenterBuilder`; neither is replaced by a visual
-  placeholder.
+- On draft PR #16, “Помощники” contains only the two approved HR Hub tools:
+  Interview Analysis and Offer Builder. Both routes are guarded by tests against
+  accidental replacement with placeholder screens.
+- Interview Analysis now has a working local evidence-based text mode for arbitrary
+  **synthetic or de-identified** recruiter notes/transcripts. It runs entirely in the
+  browser with no API/network request, maps vacancy criteria to direct text evidence,
+  turns unsupported criteria into explicit verification gaps/questions, prepares an
+  editable Huntflow draft and requires human confirmation before copying. It is
+  deliberately labelled as local preliminary analysis, not as a model/AI decision.
+- The existing staged Interview Analysis contract remains available as an advanced
+  preview for combined transcript/summary/notes/feedback/audio/video inputs.
 - Adaptation remains visible only as a workflow boundary and is explicitly marked
   backlog on draft PR #16; its standalone content is not imported.
 - Contextual help tooltip that supports mouse hover, keyboard focus and touch.
@@ -49,8 +56,8 @@ Handoff date: 2026-09-03.
   monthly) and a separate hourly KPI supplement; short task lists fit up to five cards per page.
 - Interactive Interview Analysis contract prototype with staged vacancy/material/context
   input, combinable transcript, short-summary, notes, feedback, audio and video sources,
-  format validation, editable evidence-linked results, a reviewable Huntflow comment
-  draft and mandatory human confirmation.
+  format validation, editable evidence-linked synthetic results, a reviewable Huntflow
+  comment draft and mandatory human confirmation.
 - Interactive HR Radar with a manually reviewed, attributed public-source news set,
   text/topic filters, per-tab saved items, freshness labels and source-control notes.
 - Supabase-backed HR Radar ingestion foundation: an allowlisted Mintrud RSS adapter,
@@ -63,8 +70,9 @@ Handoff date: 2026-09-03.
 - Automated guardrails for workflow order, role access, customer isolation,
   knowledge integrity, search, requests, tooltips, profile header, offer review,
   interview review, attributed HR news and invitation rules.
-- Draft PR #16 adds content-integrity and helper-route tests so standalone wording,
-  adaptation exclusion and the two working helper destinations cannot drift silently.
+- Draft PR #16 adds content-integrity, safe-parser, helper-route/implementation and
+  local-interview-analysis tests so source wording and working helper boundaries cannot
+  drift silently.
 - Private GitHub source repository MariyaUmarova/HRM-System with the verified
   baseline on main and GitHub Actions CI.
 
@@ -76,9 +84,9 @@ Handoff date: 2026-09-03.
 - Production hosting and domain.
 - Huntflow API synchronization.
 - Gmail or Yandex Mail integration.
-- Real AI interview processing, media transcription, video-frame analysis or spelling
-  correction. The interface and validation contract are ready, but no candidate media
-  is uploaded.
+- Real AI/LLM interview processing, media transcription, video-frame analysis or spelling
+  correction. The local text helper is deterministic evidence matching, not an AI call;
+  real candidate media is not uploaded.
 - A currently verified ChatGPT scheduled web-discovery task for HR Radar. Repository
   documents describe the intended 09:00 MSK automation, but the current ChatGPT task
   state was not active when independently checked on 2026-09-03; do not treat it as
@@ -104,6 +112,8 @@ Handoff date: 2026-09-03.
 - The standalone file is a read-only content/visual source, not a replacement for the
   Next.js architecture. Server code parses approved arrays from it; client pages receive
   structured typed data.
+- The standalone parser treats the HTML as data only. It does not use `node:vm`,
+  `runInNewContext`, `eval` or otherwise execute JavaScript from the reference file.
 - The standalone HTML uploaded by the Product Owner in the 2026-09-03 chat is not
   structurally identical to the repository historical v7_4 file. The uploaded file
   contains an older eight-stage `WORKFLOW_ROUTE` (including a combined “Готовлю и
@@ -122,10 +132,14 @@ Handoff date: 2026-09-03.
   not editable in this prototype.
 - Huntflow adapters intentionally expose single-object references only. Do not add
   vacancy or candidate list pages to this portal.
-- The Interview Analysis prototype accepts combinations of text, audio and video input
-  modes, but processes only its supplied synthetic text example. Media selection stores
-  metadata in the browser only; file contents are not read, uploaded or persisted.
-  A real cloud provider, retention period and access policy still require approval.
+- The primary Interview Analysis helper can now process arbitrary synthetic/de-identified
+  text locally and deterministically. It only maps lexical evidence to criteria and
+  explicitly treats missing evidence as a material gap, not a negative candidate
+  judgement. It does not rank candidates, recommend hire/reject or call an external AI.
+- The advanced Interview Analysis prototype accepts combinations of text, audio and
+  video input modes. Audio/video selection stores metadata in the browser only; file
+  contents are not read, uploaded or persisted. A real cloud provider, retention period,
+  access policy and audit path still require approval before real candidate media.
 - HR Radar shows only editor-approved seed cards. The Supabase path checks the
   allowlisted Mintrud RSS and writes only to the private `pending_review` queue; saved
   items are not persisted.
@@ -141,15 +155,21 @@ Handoff date: 2026-09-03.
 
 ## Verification on PR #16
 
-Verified on head `14791bb5be63a291ffb78429d87e69aa39beb755` before this documentation-only clarification:
+Verified on head `11fa082b3d7be0d50e6a67272645ce8c01a0877d`:
 
     pnpm lint   -> success
-    pnpm test   -> 103/103 passed
-    pnpm build  -> success
+    pnpm test   -> 109/109 passed across 18 test files
+    pnpm build  -> success, 65/65 static pages generated
 
-The same run confirmed `offer-center.test.tsx` 17/17 and
-`interview-analysis.test.tsx` 6/6. Any later head must rerun all three checks before
-review/merge.
+Focused verification on the same head:
+
+- `offer-center.test.tsx` — 17/17 passed.
+- `interview-analysis.test.tsx` — 6/6 passed.
+- `local-interview-analysis.test.tsx` — 3/3 passed.
+- `recruit-source-integrity.test.ts` — 5/5 passed.
+- `recruit-helper-links.test.ts` — 4/4 passed.
+
+Any later head must rerun all three baseline checks before review/merge.
 
 Vercel Preview is currently blocked by Vercel team membership/identity for the commit
 author, not by a demonstrated application build failure. Treat browser UAT as pending
