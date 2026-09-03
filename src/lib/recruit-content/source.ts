@@ -1,10 +1,10 @@
 import fs from "node:fs";
 import path from "node:path";
-import vm from "node:vm";
 import type {
   RecruitArticle,
   RecruitChecklist,
   RecruitContentSnapshot,
+  RecruitReference,
   RecruitScenario,
   RecruitScript,
   RecruitTemplate,
@@ -88,6 +88,120 @@ const APPROVED_WORKFLOW_ORDER = [
   "Сопровождаю адаптацию",
 ] as const;
 
+const REFERENCE_KINDS = new Set<RecruitReference["kind"]>([
+  "playbook",
+  "article",
+  "script",
+  "template",
+  "checklist",
+  "tool",
+  "page",
+]);
+
+function decodeSingleQuoted(value: string): string {
+  let result = "";
+  for (let index = 0; index < value.length; index += 1) {
+    const char = value[index];
+    if (char !== "\\") {
+      result += char;
+      continue;
+    }
+
+    index += 1;
+    const escaped = value[index];
+    if (escaped === undefined) throw new Error("Invalid trailing escape in Recruit workflow string");
+    if (escaped === "n") result += "\n";
+    else if (escaped === "r") result += "\r";
+    else if (escaped === "t") result += "\t";
+    else if (escaped === "b") result += "\b";
+    else if (escaped === "f") result += "\f";
+    else if (escaped === "v") result += "\v";
+    else if (escaped === "0") result += "\0";
+    else if (escaped === "u") {
+      const hex = value.slice(index + 1, index + 5);
+      if (!/^[0-9a-fA-F]{4}$/.test(hex)) throw new Error("Invalid Unicode escape in Recruit workflow string");
+      result += String.fromCharCode(Number.parseInt(hex, 16));
+      index += 4;
+    } else if (escaped === "x") {
+      const hex = value.slice(index + 1, index + 3);
+      if (!/^[0-9a-fA-F]{2}$/.test(hex)) throw new Error("Invalid hex escape in Recruit workflow string");
+      result += String.fromCharCode(Number.parseInt(hex, 16));
+      index += 2;
+    } else {
+      result += escaped;
+    }
+  }
+  return result;
+}
+
+function quotedProperty(source: string, key: string, required = true): string | undefined {
+  const pattern = new RegExp(`${key}\\s*:\\s*'((?:\\\\.|[^'])*)'`);
+  const match = source.match(pattern);
+  if (!match) {
+    if (required) throw new Error(`Recruit workflow object is missing ${key}`);
+    return undefined;
+  }
+  return decodeSingleQuoted(match[1]);
+}
+
+function topLevelObjects(arrayExpression: string): string[] {
+  const objects: string[] = [];
+  let index = 1;
+  while (index < arrayExpression.length - 1) {
+    if (arrayExpression[index] !== "{") {
+      index += 1;
+      continue;
+    }
+    const object = balancedExpression(arrayExpression, index, "{", "}");
+    objects.push(object);
+    index += object.length;
+  }
+  return objects;
+}
+
+function objectProperty(source: string, key: string): string {
+  const marker = new RegExp(`${key}\\s*:`).exec(source);
+  if (!marker) throw new Error(`Recruit workflow object is missing ${key}`);
+  const start = source.indexOf("{", marker.index + marker[0].length);
+  if (start < 0) throw new Error(`Recruit workflow ${key} has no object payload`);
+  return balancedExpression(source, start, "{", "}");
+}
+
+function arrayProperty(source: string, key: string): string {
+  const marker = new RegExp(`${key}\\s*:`).exec(source);
+  if (!marker) throw new Error(`Recruit workflow object is missing ${key}`);
+  const start = source.indexOf("[", marker.index + marker[0].length);
+  if (start < 0) throw new Error(`Recruit workflow ${key} has no array payload`);
+  return balancedExpression(source, start, "[", "]");
+}
+
+function parseReference(source: string): RecruitReference {
+  const kindValue = quotedProperty(source, "kind");
+  if (!kindValue || !REFERENCE_KINDS.has(kindValue as RecruitReference["kind"])) {
+    throw new Error(`Unsupported Recruit workflow reference kind: ${kindValue ?? "missing"}`);
+  }
+
+  const id = quotedProperty(source, "id");
+  if (!id) throw new Error("Recruit workflow reference is missing id");
+  const label = quotedProperty(source, "label", false);
+  return {
+    kind: kindValue as RecruitReference["kind"],
+    id,
+    ...(label ? { label } : {}),
+  };
+}
+
+function parseWorkflowStep(source: string): WorkflowRouteStep {
+  const n = quotedProperty(source, "n");
+  const title = quotedProperty(source, "title");
+  const description = quotedProperty(source, "description");
+  if (!n || !title || !description) throw new Error("Recruit workflow stage has incomplete metadata");
+
+  const primary = parseReference(objectProperty(source, "primary"));
+  const related = topLevelObjects(arrayProperty(source, "related")).map(parseReference);
+  return { n, title, description, primary, related };
+}
+
 function extractWorkflow(): WorkflowRouteStep[] {
   const html = sourceHtml();
   const marker = "const WORKFLOW_ROUTE =";
@@ -96,12 +210,7 @@ function extractWorkflow(): WorkflowRouteStep[] {
   const start = html.indexOf("[", markerIndex);
   if (start < 0) throw new Error("Recruit source WORKFLOW_ROUTE has no array payload");
   const expression = balancedExpression(html, start, "[", "]");
-
-  // The repository-owned HTML is trusted, read-only product source. vm is used only
-  // because WORKFLOW_ROUTE is a JS literal (single quotes), unlike the JSON arrays.
-  const source = vm.runInNewContext(`(${expression})`, Object.create(null), {
-    timeout: 1_000,
-  }) as WorkflowRouteStep[];
+  const source = topLevelObjects(expression).map(parseWorkflowStep);
 
   const byTitle = new Map(source.map((step) => [step.title, step]));
   return APPROVED_WORKFLOW_ORDER.map((title, index) => {
