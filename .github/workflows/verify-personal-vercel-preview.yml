@@ -1,0 +1,42 @@
+name: Verify personal Vercel preview
+
+on:
+  push:
+    branches:
+      - preview/vercel-pr16-uziuzborn
+  workflow_dispatch:
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Wait for Vercel build
+        run: sleep 45
+
+      - name: Verify preview pages
+        env:
+          BASE_URL: https://hrm-system-pr16-preview-2qrvn12wp-uziuzborn1.vercel.app
+        run: |
+          set -euo pipefail
+          for path in / /tools /interview-analysis /offer-center /scenarios /scripts /templates /hr-radar; do
+            echo "=== $path ==="
+            status=$(curl -L -sS -o page.html -w '%{http_code}' --max-time 30 "$BASE_URL$path")
+            echo "HTTP $status"
+            test "$status" -ge 200 -a "$status" -lt 400
+            head -c 500 page.html | tr '\n' ' ' || true
+            echo
+          done
+
+      - name: Verify expected Recruit content
+        env:
+          BASE_URL: https://hrm-system-pr16-preview-2qrvn12wp-uziuzborn1.vercel.app
+        run: |
+          set -euo pipefail
+          curl -L -sS --max-time 30 "$BASE_URL/" > home.html
+          grep -F 'Что вы делаете сейчас?' home.html
+          grep -F 'Рабочий маршрут' home.html
+          curl -L -sS --max-time 30 "$BASE_URL/tools" > tools.html
+          grep -F 'ИИ-анализ интервью' tools.html
+          grep -F 'Конструктор оффера' tools.html
+          curl -L -sS --max-time 30 "$BASE_URL/interview-analysis" > interview.html
+          grep -F 'локальный предварительный разбор' interview.html
