@@ -17,10 +17,10 @@ Handoff date: 2026-09-03.
 - On draft PR #16, the internal Recruit experience uses the Ivideon Recruit standalone
   visual language: fixed 264 px sidebar, sticky global search, blue/white design tokens,
   route cards, playbook details, script cards and responsive mobile navigation.
-- On draft PR #16, approved Recruit text is read directly from the repository-owned
-  `docs/references/v7_4/ivideon-recruit-standalone-v7_4.html` source instead of being
-  manually rewritten. Product filtering removes adaptation content and non-approved
-  constructors while preserving the current ten-stage order.
+- On draft PR #16, selected Recruit text is read directly from the repository-owned
+  `docs/references/v7_4/ivideon-recruit-standalone-v7_4.html` implementation source
+  instead of being manually rewritten. Product filtering removes adaptation content and
+  non-approved constructors while preserving the current ten-stage order.
 - On draft PR #16, the target sidebar IA is: Главная, Рабочие ситуации, Скрипты,
   Шаблоны и чек-листы, Помощники and HR Radar. Full workflow, requests, Offer Center,
   Interview Analysis and platform management remain contextual routes rather than
@@ -104,6 +104,17 @@ Handoff date: 2026-09-03.
 - The standalone file is a read-only content/visual source, not a replacement for the
   Next.js architecture. Server code parses approved arrays from it; client pages receive
   structured typed data.
+- The standalone HTML uploaded by the Product Owner in the 2026-09-03 chat is not
+  structurally identical to the repository historical v7_4 file. The uploaded file
+  contains an older eight-stage `WORKFLOW_ROUTE` (including a combined “Готовлю и
+  согласовываю оффер” step) and contains additional standalone generators/tools beyond
+  the two currently approved helpers. Therefore visual language and selected wording
+  may be transferred verbatim, while current product decisions explicitly override the
+  old structural model: ten workflow stages, exactly two helpers, adaptation backlog,
+  current roles and Huntflow boundary.
+- Do not describe the repository historical standalone file as byte-identical to the
+  Product Owner upload until that exact uploaded artifact is deliberately stored and
+  versioned in Git. No AI agent may silently reconcile the two sources.
 - The Offer Center prototype is client-only: changing or refreshing the page discards
   the draft. PDF/PNG/PPTX are rendered from the same fixed 569 × 1013 page DOM; export is
   blocked when text overflows instead of silently shrinking fonts.
@@ -128,12 +139,18 @@ Handoff date: 2026-09-03.
 - Historical Claude prompts in docs/CLAUDE_*.md describe earlier work. They are not
   current product authority; AGENTS.md and docs/product/ take precedence.
 
-## Expected verification baseline
+## Verification on PR #16
 
-    pnpm lint
-    pnpm test
-    pnpm build
+Verified on head `14791bb5be63a291ffb78429d87e69aa39beb755` before this documentation-only clarification:
 
-Before PR #16 is considered reviewable, all three checks must pass on its current head.
-The Offer Center and Interview Analysis test suites must remain green because these are
-working helper implementations, not decorative navigation targets.
+    pnpm lint   -> success
+    pnpm test   -> 103/103 passed
+    pnpm build  -> success
+
+The same run confirmed `offer-center.test.tsx` 17/17 and
+`interview-analysis.test.tsx` 6/6. Any later head must rerun all three checks before
+review/merge.
+
+Vercel Preview is currently blocked by Vercel team membership/identity for the commit
+author, not by a demonstrated application build failure. Treat browser UAT as pending
+until that access issue is resolved.
