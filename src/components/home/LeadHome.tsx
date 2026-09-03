@@ -2,16 +2,16 @@ import Link from "next/link";
 import { RecruitHome } from "@/components/recruit/RecruitHome";
 import { RequestsInbox } from "@/components/requests/RequestsInbox";
 import { weeklyFocusAdapter } from "@/lib/adapters/weekly-focus.mock";
-import type { Role } from "@/lib/auth/roles";
+import { ROLE_LABELS, type Role } from "@/lib/auth/roles";
 import { WeeklyFocusCard } from "./WeeklyFocusCard";
 
-export async function LeadHome({ role: _role }: { role: Role }) {
+export async function LeadHome({ role }: { role: Role }) {
   const focus = await weeklyFocusAdapter.getTeamFocus();
 
   return (
     <RecruitHome
       operations={
-        <>
+        <section aria-label={`Рабочая зона: ${ROLE_LABELS[role]}`}>
           <div className="rr-section-head">
             <div>
               <h2>Рабочая зона руководителя</h2>
@@ -25,7 +25,7 @@ export async function LeadHome({ role: _role }: { role: Role }) {
             <RequestsInbox variant="home" />
             <WeeklyFocusCard focus={focus} showOwner />
           </div>
-        </>
+        </section>
       }
     />
   );
