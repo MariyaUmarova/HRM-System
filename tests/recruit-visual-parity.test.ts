@@ -27,12 +27,14 @@ describe("Recruit standalone visual anchors", () => {
     expect(css).toContain(".rr-hero-search{display:flex;max-width:560px");
   });
 
-  it("pins final standalone typography and full-route detail metrics", () => {
+  it("pins final standalone typography, focus treatment and route detail metrics", () => {
     const parity = read("src/app/recruit-reference-parity.css");
 
     expect(parity).toContain(
       'font-family:Inter,ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif',
     );
+    expect(parity).toContain(".rr-app button:focus-visible");
+    expect(parity).toContain("outline:3px solid rgba(32,83,248,.28);outline-offset:2px");
     expect(parity).toContain(".rr-full-route-summary .rr-route-number{width:40px;height:40px}");
     expect(parity).toContain(".rr-material>span{min-width:0}");
     expect(parity).toContain(".rr-material strong{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}");
