@@ -99,6 +99,11 @@ home.
 - Approved standalone wording for the selected Recruit sections is transferred
   verbatim. AI agents must not silently shorten, rewrite, “improve” or reconcile that
   copy. Product-required structural changes are recorded explicitly instead.
+- When the Product Owner upload and the repository historical standalone differ, the
+  upload wins for approved selected content. The current implementation pins the exact
+  upload identity and stores an attachment-derived delta for changed selected objects;
+  the historical file may be reused only for objects proven identical by deterministic
+  comparison. Historical-only objects absent from the upload must not leak into runtime.
 - The permanent internal sidebar contains only: Главная; Рабочие ситуации; Скрипты;
   Шаблоны и чек-листы; Помощники; HR Radar.
 - The full recruiter workflow remains contextual from Главная and keeps the exact
@@ -144,6 +149,15 @@ home.
   reviewable observations from key frames.
 - The product must not infer emotions, personality, honesty or protected traits from a
   face or voice.
+- Sensitive/protected employment characteristics must not be used as evidence-matching,
+  scoring, ranking or hiring criteria. The analysis model must exclude such criteria
+  before evaluation rather than relying only on UI warnings. At minimum this boundary
+  covers age/date of birth, sex/gender, race/ethnicity/nationality, religion, disability
+  or health, pregnancy, family/children status, sexual orientation, political views and
+  trade-union membership.
+- A blocked sensitive criterion may be surfaced only as an excluded-policy item; it must
+  not become a positive/negative conclusion, follow-up evaluation request, candidate
+  ranking signal or Huntflow assessment criterion.
 - Real candidate media cannot be accepted until a cloud processor, private storage,
   retention/deletion period, role access and audit trail are approved.
 - The current preview validates formats but does not read or upload selected media.
