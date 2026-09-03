@@ -1,0 +1,46 @@
+name: Compare Recruit manifests
+
+on:
+  push:
+    branches:
+      - preview/vercel-pr16-uziuzborn
+    paths:
+      - src/lib/recruit-content/uploaded-manifest.json
+      - .github/workflows/compare-recruit-manifests.yml
+
+jobs:
+  compare:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Compare exact upload against historical v7.4
+        run: |
+          node <<'NODE'
+          const fs = require('node:fs');
+          const historical = JSON.parse(fs.readFileSync('src/lib/recruit-content/historical-manifest.json', 'utf8'));
+          const uploaded = JSON.parse(fs.readFileSync('src/lib/recruit-content/uploaded-manifest.json', 'utf8'));
+          console.log('SOURCE', JSON.stringify(uploaded.source));
+          let totalChanged = 0;
+          let totalSame = 0;
+          let totalAdded = 0;
+          let totalRemoved = 0;
+          for (const collection of Object.keys(uploaded.collections)) {
+            const h = historical.collections[collection] || {};
+            const u = uploaded.collections[collection] || {};
+            const ids = [...new Set([...Object.keys(h), ...Object.keys(u)])].sort();
+            const changed = ids.filter(id => h[id] && u[id] && h[id] !== u[id]);
+            const same = ids.filter(id => h[id] && u[id] && h[id] === u[id]);
+            const added = ids.filter(id => !h[id] && u[id]);
+            const removed = ids.filter(id => h[id] && !u[id]);
+            totalChanged += changed.length;
+            totalSame += same.length;
+            totalAdded += added.length;
+            totalRemoved += removed.length;
+            console.log(`COLLECTION ${collection}`);
+            console.log(`  same=${same.length} changed=${changed.length} added=${added.length} removed=${removed.length}`);
+            if (changed.length) console.log(`  CHANGED ${changed.join(',')}`);
+            if (added.length) console.log(`  ADDED ${added.join(',')}`);
+            if (removed.length) console.log(`  REMOVED ${removed.join(',')}`);
+          }
+          console.log(`TOTAL same=${totalSame} changed=${totalChanged} added=${totalAdded} removed=${totalRemoved}`);
+          NODE
