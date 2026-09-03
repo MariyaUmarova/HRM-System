@@ -275,7 +275,3 @@ export function getRecruitContent(): RecruitContentSnapshot {
   };
   return cachedSnapshot;
 }
-
-export function getRecruitSourceHtml(): string {
-  return sourceHtml();
-}
