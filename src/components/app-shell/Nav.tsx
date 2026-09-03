@@ -9,14 +9,12 @@ import { NAV_ITEMS } from "./nav-items";
 export function Nav({ role, onNavigate }: { role: Role; onNavigate?: () => void }) {
   const pathname = usePathname();
   const items = NAV_ITEMS.filter((item) => canAccess(role, item.area));
-  let lastGroup: string | undefined;
 
   return (
     <nav aria-label="Основная навигация" className="rr-nav">
-      {items.map((item) => {
+      {items.map((item, index) => {
         const active = item.href === "/" ? pathname === "/" : pathname === item.href || pathname.startsWith(`${item.href}/`);
-        const showGroup = Boolean(item.group && item.group !== lastGroup);
-        lastGroup = item.group;
+        const showGroup = Boolean(item.group && item.group !== items[index - 1]?.group);
 
         return (
           <Fragment key={`${item.area}:${item.href}`}>
