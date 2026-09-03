@@ -16,8 +16,10 @@ describe("Recruit helper links", () => {
     expect(contentHref({ kind: "tool", id: "offer-builder" })).toBe("/offer-center");
   });
 
-  it("keeps the interview helper wired to InterviewAnalysisPrototype", () => {
+  it("keeps the interview helper wired to the working local analyzer and advanced prototype", () => {
     const page = readWorkspacePage("interview-analysis/page.tsx");
+    expect(page).toContain('import { LocalInterviewTextAnalyzer } from "@/components/interview-analysis/LocalInterviewTextAnalyzer"');
+    expect(page).toContain("<LocalInterviewTextAnalyzer />");
     expect(page).toContain('import { InterviewAnalysisPrototype } from "@/components/interview-analysis/InterviewAnalysisPrototype"');
     expect(page).toContain("<InterviewAnalysisPrototype />");
     expect(page).not.toContain("PlaceholderScreen");
