@@ -42,8 +42,8 @@ describe("local interview analysis", () => {
     await user.click(screen.getByRole("button", { name: "Сформировать предварительный анализ" }));
 
     expect(screen.getByText("Локальный evidence-based результат")).toBeInTheDocument();
-    expect(screen.getByText(/Опыт B2B-продаж/)).toBeInTheDocument();
-    expect(screen.getByText(/Английский язык/)).toBeInTheDocument();
+    expect(screen.getAllByText(/Опыт B2B-продаж/).length).toBeGreaterThanOrEqual(2);
+    expect(screen.getAllByText(/Английский язык/).length).toBeGreaterThanOrEqual(2);
     expect(screen.getByRole("status")).toHaveTextContent("Никакой внешний AI не вызывался");
     expect(screen.getByRole("button", { name: "Отправить в Huntflow" })).toBeDisabled();
   });
