@@ -10,7 +10,24 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Wait for Vercel alias
-        run: sleep 35
+        run: sleep 65
+
+      - name: Diagnose preview response
+        env:
+          BASE_URL: https://hrm-system-git-preview-pr16-bot-trigger-mariya-umarova.vercel.app
+        run: |
+          set -euo pipefail
+          curl -L -sS -D headers.txt -o home.html -w 'status=%{http_code}\neffective_url=%{url_effective}\ncontent_type=%{content_type}\n' --max-time 30 "$BASE_URL/"
+          echo '--- headers ---'
+          sed -n '1,40p' headers.txt
+          echo '--- title ---'
+          grep -o -i '<title[^>]*>[^<]*</title>' home.html | head -5 || true
+          echo '--- body markers ---'
+          grep -Eo -i 'Vercel|Authentication|Ivideon|Что вы делаете сейчас\?|Рабочий маршрут|Помощники' home.html | sort -u | head -30 || true
+          echo '--- body first 2500 chars ---'
+          head -c 2500 home.html | tr '\n' ' '
+          echo
+
       - name: Verify routes and Recruit content
         env:
           BASE_URL: https://hrm-system-git-preview-pr16-bot-trigger-mariya-umarova.vercel.app
