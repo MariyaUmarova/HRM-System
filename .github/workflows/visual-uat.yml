@@ -1,0 +1,77 @@
+name: Visual UAT
+
+on:
+  push:
+    branches:
+      - codex/recruit-visual-uat
+
+jobs:
+  capture:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Smoke-check live PR16 UAT service
+        env:
+          BASE_URL: https://uat-pr16-production.up.railway.app
+        run: |
+          set -euo pipefail
+          for path in / /workflow /scenarios /scripts /templates /tools /offer-center /interview-analysis /hr-radar; do
+            echo "GET ${BASE_URL}${path}"
+            curl --fail --show-error --silent --location --output /dev/null "${BASE_URL}${path}"
+          done
+
+      - name: Install Chromium for Playwright
+        run: npx -y playwright@1.55.0 install --with-deps chromium
+
+      - name: Capture desktop and mobile screenshots
+        env:
+          BASE_URL: https://uat-pr16-production.up.railway.app
+        run: |
+          set -euo pipefail
+          mkdir -p visual-uat
+
+          capture_desktop() {
+            slug="$1"
+            path="$2"
+            npx -y playwright@1.55.0 screenshot \
+              --browser=chromium \
+              --viewport-size="1440,1000" \
+              --full-page \
+              "${BASE_URL}${path}" \
+              "visual-uat/${slug}-desktop.png"
+          }
+
+          capture_mobile() {
+            slug="$1"
+            path="$2"
+            npx -y playwright@1.55.0 screenshot \
+              --browser=chromium \
+              --device="iPhone 13" \
+              --full-page \
+              "${BASE_URL}${path}" \
+              "visual-uat/${slug}-mobile.png"
+          }
+
+          capture_desktop home /
+          capture_desktop workflow /workflow
+          capture_desktop scenarios /scenarios
+          capture_desktop scripts /scripts
+          capture_desktop templates /templates
+          capture_desktop tools /tools
+          capture_desktop offer-center /offer-center
+          capture_desktop interview-analysis /interview-analysis
+          capture_desktop hr-radar /hr-radar
+
+          capture_mobile home /
+          capture_mobile scenarios /scenarios
+          capture_mobile tools /tools
+          capture_mobile interview-analysis /interview-analysis
+
+      - name: Upload visual UAT artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: recruit-pr16-visual-uat
+          path: visual-uat/*.png
+          if-no-files-found: error
+          retention-days: 3
