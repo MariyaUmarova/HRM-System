@@ -41,6 +41,8 @@ describe("Recruit standalone visual anchors", () => {
     expect(home).toContain('title="Скрипты и шаблоны"');
     expect(home).toContain('description="Готовые тексты, файлы и чек-листы."');
     expect(home).toContain('secondaryLabel="Шаблоны и чек-листы"');
+    expect(home).toContain('<span className="rr-route-arrow">→</span>');
+    expect(home).not.toContain('<span className="rr-route-arrow">›</span>');
   });
 
   it("pins final standalone typography, focus treatment and route detail metrics", () => {
