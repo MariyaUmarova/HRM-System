@@ -24,6 +24,9 @@ export async function LeadHome({ role }: { role: Role }) {
               <Link className="rr-btn rr-btn-secondary" href="/offer-center">
                 Центр офферов
               </Link>
+              <Link className="rr-btn rr-btn-secondary" href="/hr-radar">
+                HR Radar
+              </Link>
             </div>
           </div>
           <div className="rr-ops-grid">
