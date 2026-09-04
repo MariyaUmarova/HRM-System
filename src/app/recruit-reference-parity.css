@@ -22,6 +22,14 @@
 .rr-material strong{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .rr-template-card h3{margin:2px 0 7px}
 
+.rr-status{display:inline-flex;align-items:center;border-radius:999px;padding:5px 9px;font-size:11px;font-weight:800}
+.rr-status.confirmed,.rr-status.current{background:var(--rr-greenbg);color:var(--rr-green)}
+.rr-status.proposed,.rr-status.mixed,.rr-status.review{background:var(--rr-amberbg);color:var(--rr-amber)}
+.rr-status.legal{background:var(--rr-redbg);color:var(--rr-red)}
+.rr-status.inferred,.rr-status.approved{background:var(--rr-blue50);color:var(--rr-blue)}
+.rr-status.returned{background:var(--rr-amberbg);color:var(--rr-amber)}
+.rr-status.rejected{background:var(--rr-redbg);color:var(--rr-red)}
+
 /* Preserve the standalone desktop 1fr/260px scenarios toolbar without letting
  * an inline grid definition defeat the global <=900px mobile breakpoint. */
 .rr-toolbar-scenarios{grid-template-columns:minmax(0,1fr) 260px}
