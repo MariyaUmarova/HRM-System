@@ -2,7 +2,17 @@
 
 import { useMemo, useState } from "react";
 
-export function ChecklistCard({ id, title, items }: { id: string; title: string; items: string[] }) {
+export function ChecklistCard({
+  id,
+  title,
+  stage,
+  items,
+}: {
+  id: string;
+  title: string;
+  stage: string;
+  items: string[];
+}) {
   const [checked, setChecked] = useState<number[]>([]);
   const checkedSet = useMemo(() => new Set(checked), [checked]);
   const progress = items.length === 0 ? 0 : Math.round((checked.length / items.length) * 100);
@@ -17,6 +27,7 @@ export function ChecklistCard({ id, title, items }: { id: string; title: string;
   return (
     <article className="rr-card rr-check-card">
       <h3>{title}</h3>
+      <p className="rr-muted">{stage}</p>
       {items.map((item, index) => (
         <label key={`${id}:${index}`}>
           <input
@@ -30,7 +41,6 @@ export function ChecklistCard({ id, title, items }: { id: string; title: string;
       <div className="rr-check-progress" aria-label={`Выполнено ${progress}%`}>
         <span style={{ width: `${progress}%` }} />
       </div>
-      <p className="rr-muted" style={{ marginTop: 9, fontSize: 12 }}>{progress}% выполнено</p>
     </article>
   );
 }
