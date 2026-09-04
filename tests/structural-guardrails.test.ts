@@ -79,4 +79,17 @@ describe("structural guardrails: no duplicate ATS screens", () => {
       expect(content).not.toMatch(/vacancies\.map|candidates\.map/i);
     }
   });
+
+  it("workflow detail does not route users back into the legacy knowledge-base family", () => {
+    const detail = readFileSync(join(SRC_DIR, "components/workflow/StageDetail.tsx"), "utf-8");
+    expect(detail).not.toContain("@/lib/knowledge-base/data");
+    expect(detail).not.toContain("/knowledge-base/");
+    expect(detail).toContain('href="/workflow"');
+    expect(detail).toContain('href="/search"');
+  });
+
+  it("direct adaptation workflow access stays in the explicit backlog", () => {
+    const route = readFileSync(join(SRC_DIR, "app/(workspace)/workflow/[stage]/page.tsx"), "utf-8");
+    expect(route).toContain('if (stage.id === "adaptation") redirect("/backlog/adaptation")');
+  });
 });
