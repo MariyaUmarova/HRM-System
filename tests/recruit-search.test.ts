@@ -29,7 +29,7 @@ describe("Recruit global search", () => {
   });
 
   it("does not index hidden adaptation content while the vertical is backlog", () => {
-    const results = searchRecruitContent("контрольные точки первой недели");
+    const results = searchRecruitContent("сигналах риска");
     expect(results.some((item) => item.kind === "workflow" && item.id === "adaptation")).toBe(false);
   });
 
