@@ -28,6 +28,11 @@ describe("Recruit global search", () => {
     expect(result?.meta).toBe("В бэклоге");
   });
 
+  it("does not index hidden adaptation content while the vertical is backlog", () => {
+    const results = searchRecruitContent("контрольные точки первой недели");
+    expect(results.some((item) => item.kind === "workflow" && item.id === "adaptation")).toBe(false);
+  });
+
   it("does not index the removed sourcing helper wording", () => {
     const results = searchRecruitContent("AI-помощник по поиску");
     expect(results.some((item) => item.kind === "workflow" && item.id === "sourcing")).toBe(false);
