@@ -80,12 +80,18 @@ describe("structural guardrails: no duplicate ATS screens", () => {
     }
   });
 
-  it("workflow detail does not route users back into the legacy knowledge-base family", () => {
+  it("workflow detail stays inside the current Recruit IA and visual system", () => {
     const detail = readFileSync(join(SRC_DIR, "components/workflow/StageDetail.tsx"), "utf-8");
+    const route = readFileSync(join(SRC_DIR, "app/(workspace)/workflow/[stage]/page.tsx"), "utf-8");
+
     expect(detail).not.toContain("@/lib/knowledge-base/data");
     expect(detail).not.toContain("/knowledge-base/");
+    expect(detail).toContain('className="rr-detail-hero"');
+    expect(detail).toContain('className="rr-panel"');
     expect(detail).toContain('href="/workflow"');
     expect(detail).toContain('href="/search"');
+    expect(route).toContain('{ label: "Главная", href: "/" }');
+    expect(route).not.toContain('{ label: "Моя работа", href: "/" }');
   });
 
   it("direct adaptation workflow access stays in the explicit backlog", () => {
