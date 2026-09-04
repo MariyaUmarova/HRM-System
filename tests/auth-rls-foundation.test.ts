@@ -3,24 +3,27 @@ import path from "node:path";
 import { describe, expect, it } from "vitest";
 import { ROLES } from "@/lib/auth/roles";
 
-const MIGRATION = "supabase/migrations/20260904090000_auth_rls_foundation.sql";
-const sql = fs.readFileSync(path.join(process.cwd(), MIGRATION), "utf8");
+const FOUNDATION_MIGRATION = "supabase/migrations/20260904090000_auth_rls_foundation.sql";
+const HARDENING_MIGRATION = "supabase/migrations/20260904090500_harden_auth_rls_helpers.sql";
+const foundationSql = fs.readFileSync(path.join(process.cwd(), FOUNDATION_MIGRATION), "utf8");
+const hardeningSql = fs.readFileSync(path.join(process.cwd(), HARDENING_MIGRATION), "utf8");
+const sql = `${foundationSql}\n${hardeningSql}`;
 
 function normalized(value: string): string {
   return value.replace(/\s+/g, " ").trim().toLowerCase();
 }
 
 function tableBlock(table: string): string {
-  const match = sql.match(
+  const match = foundationSql.match(
     new RegExp(`create table public\\.${table} \\(([\\s\\S]*?)\\n\\);`, "m"),
   );
-  if (!match) throw new Error(`Table ${table} not found in ${MIGRATION}`);
+  if (!match) throw new Error(`Table ${table} not found in ${FOUNDATION_MIGRATION}`);
   return match[1];
 }
 
 describe("Phase 1 auth/RLS migration", () => {
   it("keeps database roles exactly aligned with the product role model", () => {
-    const match = sql.match(
+    const match = foundationSql.match(
       /constraint profiles_role_check check \(\s*role in \(([^)]+)\)\s*\)/m,
     );
     expect(match).not.toBeNull();
@@ -41,7 +44,7 @@ describe("Phase 1 auth/RLS migration", () => {
       "audit_events",
       "integration_connections",
     ]) {
-      expect(sql).toContain(`create table public.${table}`);
+      expect(foundationSql).toContain(`create table public.${table}`);
     }
 
     expect(sql).not.toMatch(/create table public\.(candidates?|vacancies?|recruitment_funnel)/i);
@@ -75,30 +78,37 @@ describe("Phase 1 auth/RLS migration", () => {
       "audit_events",
       "integration_connections",
     ]) {
-      expect(sql).toContain(`alter table public.${table} enable row level security;`);
+      expect(foundationSql).toContain(`alter table public.${table} enable row level security;`);
     }
   });
 
+  it("hardens every SECURITY DEFINER role helper with an empty search path", () => {
+    const matches = hardeningSql.match(/security definer\s+set search_path = ''/g) ?? [];
+    expect(matches).toHaveLength(2);
+    expect(hardeningSql).toContain("from public.profiles as p");
+    expect(hardeningSql).toContain("p.id = (select auth.uid())");
+  });
+
   it("keeps profiles self-readable while reserving management visibility for Head/HRD", () => {
-    const compact = normalized(sql);
+    const compact = normalized(hardeningSql);
     expect(compact).toContain(
-      "select coalesce(private.current_app_role() in ('head_of_recruitment', 'hrd'), false)",
+      "select coalesce( private.current_app_role() in ('head_of_recruitment', 'hrd'), false )",
     );
     expect(compact).toContain(
-      "create policy profiles_self_or_management_read on public.profiles for select to authenticated using ( id = auth.uid() or private.is_management_user() )",
+      "create policy profiles_self_or_management_read on public.profiles for select to authenticated using ( id = (select auth.uid()) or (select private.is_management_user()) )",
     );
   });
 
   it("isolates requests by customer and assigned recruiter while management can read all", () => {
-    const compact = normalized(sql);
-    expect(compact).toContain("private.is_management_user()");
+    const compact = normalized(hardeningSql);
+    expect(compact).toContain("(select private.is_management_user())");
     expect(compact).toContain(
-      "private.current_app_role() = 'customer' and customer_id = auth.uid()",
+      "(select private.current_app_role()) = 'customer' and customer_id = (select auth.uid())",
     );
     expect(compact).toContain(
-      "private.current_app_role() = 'recruiter' and assigned_recruiter_id = auth.uid()",
+      "(select private.current_app_role()) = 'recruiter' and assigned_recruiter_id = (select auth.uid())",
     );
-    expect(compact).toContain(
+    expect(normalized(foundationSql)).toContain(
       "from public.intake_requests as request where request.id = intake_request_events.request_id",
     );
   });
