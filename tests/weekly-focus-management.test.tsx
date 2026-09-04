@@ -6,6 +6,7 @@ import { WeeklyFocusManager } from "@/components/platform-management/WeeklyFocus
 import {
   __resetWeeklyFocusStoreForTests,
   closeWeeklyFocusItem,
+  getWeeklyFocusServerSnapshot,
   getWeeklyFocusSnapshot,
   upsertWeeklyFocusItem,
 } from "@/lib/adapters/weekly-focus.store";
@@ -41,6 +42,52 @@ describe("weekly focus store", () => {
 
     closeWeeklyFocusItem(created.id);
     expect(getWeeklyFocusSnapshot().items.some((item) => item.id === created.id)).toBe(false);
+  });
+
+  it("rejects unsafe Huntflow links at the store boundary", () => {
+    expect(() =>
+      upsertWeeklyFocusItem({
+        title: "Небезопасный фокус",
+        priorityNote: "Не должен сохраниться",
+        ownerRecruiterId: "rec-1",
+        vacancyRef: {
+          externalId: "hf-bad",
+          title: "Bad ref",
+          department: "QA",
+          huntflowUrl: "javascript:alert(1)",
+        },
+      }),
+    ).toThrow("Unsafe Huntflow URL");
+  });
+
+  it("ignores tampered browser state instead of rendering an unsafe link", () => {
+    const week = getWeeklyFocusServerSnapshot();
+    window.localStorage.setItem(
+      "ivideon_hr_hub_weekly_focus_v1",
+      JSON.stringify({
+        rangeStart: week.rangeStart,
+        rangeEnd: week.rangeEnd,
+        items: [
+          {
+            id: "focus-bad",
+            title: "Подменённый фокус",
+            priorityNote: "tampered",
+            ownerRecruiterId: "rec-1",
+            vacancyRef: {
+              externalId: "hf-bad",
+              title: "Bad ref",
+              department: "QA",
+              huntflowUrl: "javascript:alert(1)",
+            },
+          },
+        ],
+      }),
+    );
+    __resetWeeklyFocusStoreForTests();
+
+    const hydrated = getWeeklyFocusSnapshot();
+    expect(hydrated.items.some((item) => item.id === "focus-bad")).toBe(false);
+    expect(hydrated.items.some((item) => item.id === "focus-1")).toBe(true);
   });
 
   it("shows a recruiter only their own active focus", () => {
