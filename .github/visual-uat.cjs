@@ -68,6 +68,10 @@ function fail(scope, message) {
       title: document.title,
       h1: document.querySelector('h1')?.textContent?.trim() || null,
       innerWidth: window.innerWidth,
+      visualViewportWidth: window.visualViewport?.width ?? null,
+      screenWidth: window.screen.width,
+      devicePixelRatio: window.devicePixelRatio,
+      viewportMeta: document.querySelector('meta[name="viewport"]')?.getAttribute('content') ?? null,
       scrollWidth: document.documentElement.scrollWidth,
       bodyScrollWidth: document.body.scrollWidth,
       fontFamily: getComputedStyle(document.querySelector('.rr-app') || document.body).fontFamily,
@@ -81,15 +85,20 @@ function fail(scope, message) {
     const item = {
       slug,
       route,
+      mode,
       status: response?.status() ?? null,
       ...metrics,
       horizontalOverflow: Math.max(metrics.scrollWidth, metrics.bodyScrollWidth) > metrics.innerWidth + 1,
+      viewportMismatch: mode === 'mobile' && Math.abs(metrics.innerWidth - 390) > 1,
       errors: localErrors,
       screenshot: filename,
     };
 
     report[mode].push(item);
     localErrors.forEach((message) => fail(`${slug}:${mode}`, message));
+    if (item.viewportMismatch) {
+      fail(`${slug}:${mode}`, `Mobile layout viewport is ${metrics.innerWidth}px instead of 390px`);
+    }
     await page.close();
   }
 
@@ -254,16 +263,16 @@ function fail(scope, message) {
     await settle(450);
 
     const prefill = await page.evaluate(() => {
-      const inputValue = (labelText) => {
+      const controlValue = (labelText) => {
         const label = [...document.querySelectorAll('label')].find((node) =>
           node.textContent?.trim().startsWith(labelText),
         );
-        return label?.querySelector('input')?.value ?? null;
+        return label?.querySelector('input, textarea')?.value ?? null;
       };
       return {
-        position: inputValue('Должность'),
-        department: inputValue('Подразделение'),
-        candidate: inputValue('Имя кандидата'),
+        position: controlValue('Должность'),
+        department: controlValue('Подразделение'),
+        candidate: controlValue('Имя кандидата'),
       };
     });
 
@@ -351,8 +360,8 @@ function fail(scope, message) {
 
   const badStatuses = [...report.desktop, ...report.mobile].filter((item) => item.status !== 200);
   const overflows = [...report.desktop, ...report.mobile].filter((item) => item.horizontalOverflow);
-  badStatuses.forEach((item) => fail(`${item.slug}:${item.mode || 'route'}`, `Unexpected HTTP status ${item.status}`));
-  overflows.forEach((item) => fail(`${item.slug}:${item.mode || 'route'}`, 'Horizontal overflow detected'));
+  badStatuses.forEach((item) => fail(`${item.slug}:${item.mode}`, `Unexpected HTTP status ${item.status}`));
+  overflows.forEach((item) => fail(`${item.slug}:${item.mode}`, 'Horizontal overflow detected'));
 
   fs.writeFileSync(path.join(outDir, 'report.json'), JSON.stringify(report, null, 2));
   console.log('VISUAL_UAT_REPORT_START');
