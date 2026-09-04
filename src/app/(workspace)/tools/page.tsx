@@ -33,10 +33,6 @@ export default async function ToolsPage() {
           </article>
         ))}
       </div>
-
-      <div className="rr-callout" style={{ marginTop: 20 }}>
-        <strong>Важно:</strong> помощники используют рабочие компоненты HR Hub. Анализ интервью остаётся предварительным и требует проверки рекрутером; конструктор оффера генерирует файлы в браузере и не отправляет их автоматически.
-      </div>
     </div>
   );
 }
