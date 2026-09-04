@@ -28,7 +28,7 @@ export default async function SearchPage({
         </div>
       </div>
 
-      <form className="rr-toolbar" action="/search" role="search" style={{ gridTemplateColumns: "1fr auto" }}>
+      <form className="rr-toolbar rr-toolbar-search" action="/search" role="search">
         <input defaultValue={query} name="q" placeholder="Найти инструкцию, скрипт или шаблон" type="search" />
         <button className="rr-btn rr-btn-primary" type="submit">Найти</button>
       </form>
