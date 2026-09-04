@@ -1,6 +1,7 @@
+import { currentWorkflowTexts } from "@/lib/workflow/current-ia";
+import { WORKFLOW_STAGES } from "@/lib/workflow/stages";
 import { contentHref, RECRUIT_KIND_LABELS } from "./links";
 import { getRecruitContent } from "./source";
-import { WORKFLOW_STAGES } from "@/lib/workflow/stages";
 import type { RecruitContentKind } from "./types";
 
 export type RecruitSearchKind = RecruitContentKind | "workflow";
@@ -50,14 +51,24 @@ export function searchRecruitContent(query: string): RecruitSearchResult[] {
   const candidates: Array<Omit<RecruitSearchResult, "score"> & { haystack: string }> = [];
 
   for (const stage of WORKFLOW_STAGES) {
+    const currentStage = {
+      ...stage,
+      entry: currentWorkflowTexts(stage.id, stage.entry),
+      participants: currentWorkflowTexts(stage.id, stage.participants),
+      whatToDo: currentWorkflowTexts(stage.id, stage.whatToDo),
+      howTo: currentWorkflowTexts(stage.id, stage.howTo),
+      sla: currentWorkflowTexts(stage.id, stage.sla),
+      doneWhen: currentWorkflowTexts(stage.id, stage.doneWhen),
+    };
+    const isAdaptationBacklog = stage.id === "adaptation";
     candidates.push({
       id: stage.id,
       kind: "workflow",
       title: stage.title,
       summary: stage.shortDescription,
-      meta: `Этап ${stage.order}`,
-      href: `/workflow/${stage.id}`,
-      haystack: JSON.stringify(stage),
+      meta: isAdaptationBacklog ? "В бэклоге" : `Этап ${stage.order}`,
+      href: isAdaptationBacklog ? "/backlog/adaptation" : `/workflow/${stage.id}`,
+      haystack: JSON.stringify(currentStage),
     });
   }
   for (const item of snapshot.scenarios) {
