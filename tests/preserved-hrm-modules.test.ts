@@ -17,6 +17,18 @@ describe("preserved HR Hub modules remain discoverable", () => {
     }
   });
 
+  it("keeps HR Radar visible in the HRM work zone without altering standalone resource cards", () => {
+    const recruiterHome = read("src/components/home/RecruiterHome.tsx");
+    const leadHome = read("src/components/home/LeadHome.tsx");
+    const recruitReferenceHome = read("src/components/recruit/RecruitHome.tsx");
+
+    for (const source of [recruiterHome, leadHome]) {
+      expect(source).toContain('href="/hr-radar"');
+      expect(source).toContain("HR Radar");
+    }
+    expect(recruitReferenceHome).not.toContain('href="/hr-radar"');
+  });
+
   it("keeps customer-request entry points visible only in management home", () => {
     const recruiterHome = read("src/components/home/RecruiterHome.tsx");
     const leadHome = read("src/components/home/LeadHome.tsx");
