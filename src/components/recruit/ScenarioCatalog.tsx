@@ -3,18 +3,8 @@
 import Link from "next/link";
 import { useMemo, useState } from "react";
 import { contentHref } from "@/lib/recruit-content/links";
+import { recruitSourceLabel } from "@/lib/recruit-content/source-labels";
 import type { RecruitScenario } from "@/lib/recruit-content/types";
-
-const SOURCE_LABELS: Record<string, string> = {
-  confirmed: "Подтверждено внутренним документом",
-  inferred: "Выведено из нескольких документов",
-  proposed: "Предлагаемая практика — нужно согласование Head",
-  mixed: "Часть подтверждена, часть требует согласования",
-  legal: "Требует юридической проверки",
-  approved: "Практика утверждена Head",
-  returned: "Возвращено на доработку",
-  rejected: "Отклонено Head of Recruitment",
-};
 
 export function ScenarioCatalog({ scenarios }: { scenarios: RecruitScenario[] }) {
   const [query, setQuery] = useState("");
@@ -47,7 +37,7 @@ export function ScenarioCatalog({ scenarios }: { scenarios: RecruitScenario[] })
         </select>
       </div>
       {filtered.length === 0 ? (
-        <div className="rr-empty"><strong>Ничего не найдено</strong>Попробуйте изменить запрос или категорию.</div>
+        <div className="rr-empty"><strong>Ничего не найдено</strong>Измените запрос или фильтры.</div>
       ) : (
         <div className="rr-grid rr-grid-3">
           {filtered.map((item) => {
@@ -59,7 +49,7 @@ export function ScenarioCatalog({ scenarios }: { scenarios: RecruitScenario[] })
                 key={item.id}
               >
                 <div className="rr-topline">
-                  <span className={`rr-status ${confidence}`}>{SOURCE_LABELS[confidence] ?? confidence}</span>
+                  <span className={`rr-status ${confidence}`}>{recruitSourceLabel(confidence)}</span>
                 </div>
                 <h3>{item.title}</h3>
                 <p>{item.summary}</p>
