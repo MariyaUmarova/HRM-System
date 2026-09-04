@@ -27,7 +27,7 @@ export default async function ToolsPage() {
             <div className="rr-tool-icon" aria-hidden="true">{tool.icon ?? "✦"}</div>
             <h3>{tool.title}</h3>
             <p>{tool.description}</p>
-            <Link className="rr-btn rr-btn-primary" href={contentHref({ kind: "tool", id: tool.id })}>
+            <Link className="rr-btn rr-btn-secondary" href={contentHref({ kind: "tool", id: tool.id })}>
               {tool.buttonLabel ?? "Открыть"}
             </Link>
           </article>
