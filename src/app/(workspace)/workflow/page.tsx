@@ -48,7 +48,7 @@ export default async function WorkflowPage() {
                 <div className="rr-full-route-main">
                   <div>
                     <strong>{isBacklog ? "Раздел в бэклоге" : primaryItem?.title ?? primary.label ?? "Основная инструкция"}</strong>
-                    <span>{isBacklog ? "Содержательная часть адаптации пока не переносится." : "Основной материал этого этапа"}</span>
+                    <span>{isBacklog ? "Содержательная часть адаптации пока не переносится." : primary.label ?? "Основная инструкция этапа"}</span>
                   </div>
                   <Link className="rr-btn rr-btn-primary" href={contentHref(primary)}>
                     {isBacklog ? "Статус раздела" : "Открыть"}
@@ -57,7 +57,7 @@ export default async function WorkflowPage() {
 
                 {related.length > 0 && !isBacklog ? (
                   <>
-                    <div className="rr-materials-title">Дополнительные материалы</div>
+                    <div className="rr-materials-title">Все материалы этапа</div>
                     <div className="rr-materials">
                       {related.map((reference) => {
                         const item = findRecruitItem(snapshot, reference);
@@ -67,7 +67,7 @@ export default async function WorkflowPage() {
                               <strong>{reference.label ?? item?.title ?? reference.id}</strong>
                               <small>{reference.kind === "playbook" ? "Рабочая ситуация" : reference.kind === "article" ? "Инструкция" : reference.kind === "script" ? "Скрипт" : reference.kind === "template" ? "Шаблон" : reference.kind === "checklist" ? "Чек-лист" : "Материал"}</small>
                             </span>
-                            <b>›</b>
+                            <b>→</b>
                           </Link>
                         );
                       })}
