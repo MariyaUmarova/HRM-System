@@ -55,9 +55,7 @@ describe("structural guardrails: no duplicate ATS screens", () => {
     for (const file of files) {
       const content = stripComments(readFileSync(file, "utf-8"));
       for (const pattern of FORBIDDEN_PATTERNS) {
-        if (pattern.test(content)) {
-          offenders.push(`${file}: matched ${pattern}`);
-        }
+        if (pattern.test(content)) offenders.push(`${file}: matched ${pattern}`);
       }
     }
     expect(offenders).toEqual([]);
@@ -92,6 +90,17 @@ describe("structural guardrails: no duplicate ATS screens", () => {
     expect(detail).toContain('href="/search"');
     expect(route).toContain('{ label: "Главная", href: "/" }');
     expect(route).not.toContain('{ label: "Моя работа", href: "/" }');
+  });
+
+  it("legacy knowledge-base routes redirect into the current Recruit IA", () => {
+    const indexRoute = readFileSync(join(SRC_DIR, "app/(workspace)/knowledge-base/page.tsx"), "utf-8");
+    const itemRoute = readFileSync(join(SRC_DIR, "app/(workspace)/knowledge-base/[id]/page.tsx"), "utf-8");
+
+    expect(indexRoute).toContain('redirect("/scenarios")');
+    expect(itemRoute).toContain("referenceForId(getRecruitContent(), id)");
+    expect(itemRoute).toContain('redirect(reference ? contentHref(reference) : "/scenarios")');
+    expect(itemRoute).not.toContain("KnowledgeItemDetail");
+    expect(itemRoute).not.toContain("@/lib/knowledge-base/data");
   });
 
   it("direct adaptation workflow access stays in the explicit backlog", () => {
