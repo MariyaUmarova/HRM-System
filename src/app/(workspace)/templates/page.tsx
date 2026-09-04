@@ -34,6 +34,11 @@ export default async function TemplatesPage() {
                 <Link className="rr-btn rr-btn-secondary" href={contentHref({ kind: "template", id: item.id })}>
                   Открыть
                 </Link>
+                {item.id === "offer-template" && item.downloadLabel ? (
+                  <a className="rr-btn rr-btn-primary" href={`/templates/download/${item.id}`}>
+                    {item.downloadLabel}
+                  </a>
+                ) : null}
                 {item.articleId && snapshot.articles.some((article) => article.id === item.articleId) ? (
                   <Link className="rr-btn rr-btn-ghost" href={contentHref({ kind: "article", id: item.articleId })}>
                     Инструкция
