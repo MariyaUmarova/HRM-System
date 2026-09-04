@@ -79,6 +79,9 @@ export function AppShell({ role, children }: { role: Role; children: ReactNode }
             ☰
           </button>
           <GlobalSearch />
+          <Link className="rr-btn rr-btn-secondary rr-topbar-quick" href="/scripts?q=кандидат">
+            ✦ Написать кандидату
+          </Link>
         </header>
         <div className="rr-content">{children}</div>
       </main>
