@@ -1,11 +1,9 @@
 import Link from "next/link";
 import { RecruitHome } from "@/components/recruit/RecruitHome";
-import { CURRENT_RECRUITER_ID, weeklyFocusAdapter } from "@/lib/adapters/weekly-focus.mock";
-import { WeeklyFocusCard } from "./WeeklyFocusCard";
+import { CURRENT_RECRUITER_ID } from "@/lib/adapters/seed";
+import { WeeklyFocusLiveCard } from "./WeeklyFocusLiveCard";
 
-export async function RecruiterHome() {
-  const focus = await weeklyFocusAdapter.getFocusForRecruiter(CURRENT_RECRUITER_ID);
-
+export function RecruiterHome() {
   return (
     <RecruitHome
       operations={
@@ -25,7 +23,7 @@ export async function RecruiterHome() {
             </div>
           </div>
           <div className="rr-ops-grid">
-            <WeeklyFocusCard focus={focus} />
+            <WeeklyFocusLiveCard recruiterId={CURRENT_RECRUITER_ID} />
           </div>
         </section>
       }
