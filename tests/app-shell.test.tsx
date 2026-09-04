@@ -25,6 +25,19 @@ describe("AppShell profile header", () => {
     expect(screen.getByRole("link", { name: /Рабочие ситуации/ })).toHaveAttribute("href", "/scenarios");
   });
 
+  it("keeps the standalone global-search copy", () => {
+    render(
+      <AppShell role="recruiter">
+        <p>Рабочая область</p>
+      </AppShell>,
+    );
+
+    expect(screen.getByRole("searchbox", { name: "Глобальный поиск" })).toHaveAttribute(
+      "placeholder",
+      "Поиск по ситуациям, скриптам, шагам и источникам",
+    );
+  });
+
   it("does not expose a role switcher in the site menu", () => {
     render(
       <AppShell role="head_of_recruitment">
