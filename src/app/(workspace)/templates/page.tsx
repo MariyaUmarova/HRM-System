@@ -53,7 +53,7 @@ export default async function TemplatesPage() {
       <div className="rr-section-head"><h2>Чек-листы</h2></div>
       <div className="rr-grid rr-grid-3">
         {snapshot.checklists.map((item) => (
-          <ChecklistCard id={item.id} items={item.items} key={item.id} title={item.title} />
+          <ChecklistCard id={item.id} items={item.items} key={item.id} stage={item.stage} title={item.title} />
         ))}
       </div>
     </div>
