@@ -49,7 +49,7 @@ export function RecruitHome({ operations }: { operations?: ReactNode }) {
                   <strong>{step.title}</strong>
                   <small>{step.description}</small>
                 </span>
-                {isBacklog ? <span className="rr-route-backlog">В бэклоге</span> : <span className="rr-route-arrow">›</span>}
+                {isBacklog ? <span className="rr-route-backlog">В бэклоге</span> : <span className="rr-route-arrow">→</span>}
               </Link>
             );
           })}
