@@ -14,14 +14,14 @@ describe("AppShell profile header", () => {
     expect(screen.getByText("Рабочая область")).toBeInTheDocument();
   });
 
-  it("keeps the approved working route discoverable in the persistent sidebar", () => {
+  it("keeps workflow on Home instead of duplicating it in the persistent sidebar", () => {
     render(
       <AppShell role="recruiter">
         <p>Рабочая область</p>
       </AppShell>,
     );
 
-    expect(screen.getByRole("link", { name: /Рабочий маршрут/ })).toHaveAttribute("href", "/workflow");
+    expect(screen.queryByRole("link", { name: /Рабочий маршрут/ })).not.toBeInTheDocument();
     expect(screen.getByRole("link", { name: /Рабочие ситуации/ })).toHaveAttribute("href", "/scenarios");
   });
 

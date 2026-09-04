@@ -9,20 +9,14 @@ export interface NavItem {
 }
 
 /**
- * User-facing Recruit navigation. Deep routes such as Offer Center, Interview
- * Analysis, requests and platform management remain available but are entered
- * contextually instead of competing for permanent sidebar space.
+ * User-facing Recruit navigation. The full workflow remains a prominent Home
+ * route instead of becoming a duplicate permanent sidebar entry. Deep routes
+ * such as Offer Center, Interview Analysis, requests and platform management
+ * remain available through contextual entry points.
  */
 export const NAV_ITEMS: NavItem[] = [
   { href: "/", label: "Главная", area: "recruiter_home", icon: "⌂" },
   { href: "/", label: "Главная", area: "management_home", icon: "⌂" },
-  {
-    href: "/workflow",
-    label: "Рабочий маршрут",
-    area: "knowledge_base",
-    icon: "⇢",
-    group: "Рабочий процесс",
-  },
   {
     href: "/scenarios",
     label: "Рабочие ситуации",
