@@ -1,13 +1,10 @@
 import Link from "next/link";
 import { RecruitHome } from "@/components/recruit/RecruitHome";
 import { RequestsInbox } from "@/components/requests/RequestsInbox";
-import { weeklyFocusAdapter } from "@/lib/adapters/weekly-focus.mock";
 import { ROLE_LABELS, type Role } from "@/lib/auth/roles";
-import { WeeklyFocusCard } from "./WeeklyFocusCard";
+import { WeeklyFocusLiveCard } from "./WeeklyFocusLiveCard";
 
-export async function LeadHome({ role }: { role: Role }) {
-  const focus = await weeklyFocusAdapter.getTeamFocus();
-
+export function LeadHome({ role }: { role: Role }) {
   return (
     <RecruitHome
       operations={
@@ -31,7 +28,7 @@ export async function LeadHome({ role }: { role: Role }) {
           </div>
           <div className="rr-ops-grid">
             <RequestsInbox variant="home" />
-            <WeeklyFocusCard focus={focus} showOwner />
+            <WeeklyFocusLiveCard showOwner />
           </div>
         </section>
       }
