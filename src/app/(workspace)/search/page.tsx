@@ -24,12 +24,12 @@ export default async function SearchPage({
         <div>
           <div className="rr-eyebrow rr-eyebrow-blue">Глобальный поиск</div>
           <h1>{query ? `Результаты: «${query}»` : "Поиск по рабочим материалам"}</h1>
-          <p>Ищет по инструкциям, рабочим ситуациям, скриптам, шаблонам, чек-листам и помощникам.</p>
+          <p>Ищет по этапам рабочего маршрута, инструкциям, рабочим ситуациям, скриптам, шаблонам, чек-листам и помощникам.</p>
         </div>
       </div>
 
       <form className="rr-toolbar rr-toolbar-search" action="/search" role="search">
-        <input defaultValue={query} name="q" placeholder="Найти инструкцию, скрипт или шаблон" type="search" />
+        <input defaultValue={query} name="q" placeholder="Найти этап, инструкцию, скрипт или шаблон" type="search" />
         <button className="rr-btn rr-btn-primary" type="submit">Найти</button>
       </form>
 
@@ -42,7 +42,7 @@ export default async function SearchPage({
           {results.map((result) => (
             <Link className="rr-card rr-clickable" href={result.href} key={`${result.kind}:${result.id}`}>
               <div className="rr-topline">
-                <span className="rr-tag">{RECRUIT_KIND_LABELS[result.kind]}</span>
+                <span className="rr-tag">{result.kind === "workflow" ? "Этап маршрута" : RECRUIT_KIND_LABELS[result.kind]}</span>
                 {result.meta ? <span className="rr-tag">{result.meta}</span> : null}
               </div>
               <h3>{result.title}</h3>
