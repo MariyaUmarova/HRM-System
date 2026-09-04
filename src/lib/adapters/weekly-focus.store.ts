@@ -1,5 +1,6 @@
 "use client";
 
+import { RECRUITERS } from "./seed";
 import { createWeeklyFocusSeed } from "./weekly-focus.seed";
 import type { HuntflowVacancyRef, WeeklyFocus, WeeklyFocusItem } from "./types";
 
@@ -9,30 +10,69 @@ let cache: WeeklyFocus = SERVER_SNAPSHOT;
 let hydrated = false;
 const listeners = new Set<() => void>();
 
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return typeof value === "object" && value !== null;
+}
+
+function isSafeItem(value: unknown): value is WeeklyFocusItem {
+  if (!isRecord(value) || !isRecord(value.vacancyRef)) return false;
+  const vacancy = value.vacancyRef;
+  return (
+    typeof value.id === "string" &&
+    typeof value.title === "string" &&
+    typeof value.priorityNote === "string" &&
+    typeof value.ownerRecruiterId === "string" &&
+    RECRUITERS.some((recruiter) => recruiter.id === value.ownerRecruiterId) &&
+    typeof vacancy.externalId === "string" &&
+    typeof vacancy.title === "string" &&
+    typeof vacancy.department === "string" &&
+    typeof vacancy.huntflowUrl === "string" &&
+    /^https:\/\//i.test(vacancy.huntflowUrl)
+  );
+}
+
+function readStoredFocus(raw: string, currentWeek: WeeklyFocus): WeeklyFocus | null {
+  try {
+    const parsed: unknown = JSON.parse(raw);
+    if (!isRecord(parsed) || !Array.isArray(parsed.items)) return null;
+    if (parsed.rangeStart !== currentWeek.rangeStart || parsed.rangeEnd !== currentWeek.rangeEnd) return null;
+    if (!parsed.items.every(isSafeItem)) return null;
+    return {
+      rangeStart: currentWeek.rangeStart,
+      rangeEnd: currentWeek.rangeEnd,
+      items: parsed.items,
+    };
+  } catch {
+    return null;
+  }
+}
+
+function persist(next: WeeklyFocus) {
+  if (typeof window === "undefined") return;
+  try {
+    window.localStorage.setItem(STORAGE_KEY, JSON.stringify(next));
+  } catch {
+    // The in-memory store remains usable even when browser storage is blocked.
+  }
+}
+
 function ensureHydrated() {
   if (hydrated || typeof window === "undefined") return;
   hydrated = true;
+  const currentWeek = createWeeklyFocusSeed();
   try {
     const raw = window.localStorage.getItem(STORAGE_KEY);
-    if (raw) {
-      cache = JSON.parse(raw) as WeeklyFocus;
-    } else {
-      window.localStorage.setItem(STORAGE_KEY, JSON.stringify(cache));
-    }
+    const stored = raw ? readStoredFocus(raw, currentWeek) : null;
+    cache = stored ?? currentWeek;
+    if (!stored) persist(cache);
   } catch {
-    // Keep the in-memory seed if browser storage is unavailable.
+    cache = currentWeek;
   }
 }
 
 function writeFocus(next: WeeklyFocus) {
   cache = next;
-  if (typeof window !== "undefined") {
-    try {
-      window.localStorage.setItem(STORAGE_KEY, JSON.stringify(next));
-    } catch {
-      // The in-memory store remains usable even when browser storage is blocked.
-    }
-  }
+  persist(next);
   listeners.forEach((listener) => listener());
 }
 
