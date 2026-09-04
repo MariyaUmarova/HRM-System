@@ -1,0 +1,3 @@
+UAT target app head: bb39d2078eb991076ddfc9d4488c47d775299a59
+Railway service: uat-pr16
+Purpose: trigger final visual/browser UAT after mobile scenarios toolbar fix.
