@@ -1,6 +1,4 @@
 import Link from "next/link";
-import { getKnowledgeItem } from "@/lib/knowledge-base/data";
-import { KNOWLEDGE_KIND_LABELS } from "@/lib/knowledge-base/types";
 import { getAdjacentStages, type WorkflowStage } from "@/lib/workflow/stages";
 
 function Block({ title, children }: { title: string; children: React.ReactNode }) {
@@ -17,9 +15,7 @@ function BulletList({ items }: { items: string[] }) {
     <ul className="flex flex-col gap-1.5 text-sm text-foreground">
       {items.map((item, i) => (
         <li key={i} className="flex gap-2">
-          <span aria-hidden="true" className="text-brand">
-            •
-          </span>
+          <span aria-hidden="true" className="text-brand">•</span>
           <span>{item}</span>
         </li>
       ))}
@@ -32,9 +28,7 @@ function OrderedList({ items }: { items: string[] }) {
     <ol className="flex flex-col gap-1.5 text-sm text-foreground">
       {items.map((item, i) => (
         <li key={i} className="flex gap-2">
-          <span aria-hidden="true" className="font-medium text-brand">
-            {i + 1}.
-          </span>
+          <span aria-hidden="true" className="font-medium text-brand">{i + 1}.</span>
           <span>{item}</span>
         </li>
       ))}
@@ -44,7 +38,6 @@ function OrderedList({ items }: { items: string[] }) {
 
 export function StageDetail({ stage }: { stage: WorkflowStage }) {
   const { previous, next } = getAdjacentStages(stage.id);
-  const related = stage.relatedKnowledgeIds.map(getKnowledgeItem).filter(Boolean);
 
   return (
     <div className="flex flex-col gap-6">
@@ -57,60 +50,30 @@ export function StageDetail({ stage }: { stage: WorkflowStage }) {
       </div>
 
       <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-        <Block title="Вход в процесс">
-          <BulletList items={stage.entry} />
-        </Block>
-        <Block title="Участники">
-          <BulletList items={stage.participants} />
-        </Block>
-        <Block title="Что сделать">
-          <BulletList items={stage.whatToDo} />
-        </Block>
-        <Block title="Как сделать">
-          <OrderedList items={stage.howTo} />
-        </Block>
-        <Block title="SLA и эскалация">
-          <BulletList items={stage.sla} />
-        </Block>
-        <Block title="Процесс завершён, когда">
-          <BulletList items={stage.doneWhen} />
-        </Block>
+        <Block title="Вход в процесс"><BulletList items={stage.entry} /></Block>
+        <Block title="Участники"><BulletList items={stage.participants} /></Block>
+        <Block title="Что сделать"><BulletList items={stage.whatToDo} /></Block>
+        <Block title="Как сделать"><OrderedList items={stage.howTo} /></Block>
+        <Block title="SLA и эскалация"><BulletList items={stage.sla} /></Block>
+        <Block title="Процесс завершён, когда"><BulletList items={stage.doneWhen} /></Block>
       </div>
 
-      {related.length > 0 && (
-        <section>
-          <h2 className="text-sm font-semibold text-foreground">Материалы базы знаний</h2>
-          <ul className="mt-2 flex flex-wrap gap-2">
-            {related.map((item) => (
-              <li key={item!.id}>
-                <Link
-                  href={`/knowledge-base/${item!.id}`}
-                  className="inline-flex items-center gap-1.5 rounded-full border border-border bg-surface px-3 py-1.5 text-xs font-medium text-foreground hover:border-brand hover:text-brand"
-                >
-                  <span className="text-muted">{KNOWLEDGE_KIND_LABELS[item!.kind]}</span>
-                  {item!.title}
-                </Link>
-              </li>
-            ))}
-          </ul>
-        </section>
-      )}
+      <div className="flex flex-wrap gap-2">
+        <Link href="/workflow" className="rr-btn rr-btn-secondary">Полный рабочий маршрут</Link>
+        <Link href="/search" className="rr-btn rr-btn-ghost">Найти материал</Link>
+      </div>
 
       <nav className="flex items-center justify-between border-t border-border pt-4 text-sm">
         {previous ? (
-          <Link href={`/workflow/${previous.id}`} className="text-brand hover:underline">
+          <Link href={previous.id === "adaptation" ? "/backlog/adaptation" : `/workflow/${previous.id}`} className="text-brand hover:underline">
             ← {previous.title}
           </Link>
-        ) : (
-          <span />
-        )}
+        ) : <span />}
         {next ? (
-          <Link href={`/workflow/${next.id}`} className="text-brand hover:underline">
+          <Link href={next.id === "adaptation" ? "/backlog/adaptation" : `/workflow/${next.id}`} className="text-brand hover:underline">
             {next.title} →
           </Link>
-        ) : (
-          <span />
-        )}
+        ) : <span />}
       </nav>
     </div>
   );
