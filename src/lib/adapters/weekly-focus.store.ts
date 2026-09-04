@@ -1,50 +1,10 @@
 "use client";
 
-import { currentWorkWeek } from "@/lib/format";
-import { VACANCIES } from "./seed";
+import { createWeeklyFocusSeed } from "./weekly-focus.seed";
 import type { HuntflowVacancyRef, WeeklyFocus, WeeklyFocusItem } from "./types";
 
 const STORAGE_KEY = "ivideon_hr_hub_weekly_focus_v1";
-
-function seedFocus(): WeeklyFocus {
-  const { start, end } = currentWorkWeek();
-  return {
-    rangeStart: start,
-    rangeEnd: end,
-    items: [
-      {
-        id: "focus-1",
-        title: "Закрыть первичный поиск Backend-разработчика",
-        priorityNote: "Приоритет №1 — срок показа кандидатов истекает на этой неделе",
-        vacancyRef: VACANCIES[0],
-        ownerRecruiterId: "rec-1",
-      },
-      {
-        id: "focus-2",
-        title: "Согласовать профиль Продуктового дизайнера",
-        priorityNote: "Нужен повторный бриф с заказчиком после правок макета",
-        vacancyRef: VACANCIES[1],
-        ownerRecruiterId: "rec-1",
-      },
-      {
-        id: "focus-3",
-        title: "Вернуться к отклику по DevOps-инженеру",
-        priorityNote: "Поставлено на паузу до решения по бюджету",
-        vacancyRef: VACANCIES[3],
-        ownerRecruiterId: "rec-2",
-      },
-      {
-        id: "focus-4",
-        title: "Собрать команду интервьюеров для Sales-менеджера",
-        priorityNote: "Совместное интервью нужно назначить до четверга",
-        vacancyRef: VACANCIES[2],
-        ownerRecruiterId: "rec-3",
-      },
-    ],
-  };
-}
-
-const SERVER_SNAPSHOT = seedFocus();
+const SERVER_SNAPSHOT = createWeeklyFocusSeed();
 let cache: WeeklyFocus = SERVER_SNAPSHOT;
 let hydrated = false;
 const listeners = new Set<() => void>();
@@ -130,6 +90,6 @@ export function closeWeeklyFocusItem(id: string): void {
 }
 
 export function __resetWeeklyFocusStoreForTests() {
-  cache = seedFocus();
+  cache = createWeeklyFocusSeed();
   hydrated = false;
 }
