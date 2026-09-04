@@ -86,13 +86,6 @@ export function RecruitHome({ operations }: { operations?: ReactNode }) {
           href="/tools"
           linkLabel="Открыть помощники"
         />
-        <ResourceCard
-          icon="▤"
-          title="HR Radar"
-          description="Обзор важных HR-новостей и изменений с обязательной редакторской проверкой."
-          href="/hr-radar"
-          linkLabel="Открыть HR Radar"
-        />
       </div>
 
       {operations ? <section className="rr-ops">{operations}</section> : null}
