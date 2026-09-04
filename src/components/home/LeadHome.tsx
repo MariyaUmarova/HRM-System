@@ -17,9 +17,14 @@ export async function LeadHome({ role }: { role: Role }) {
               <h2>Рабочая зона руководителя</h2>
               <p>Новые заявки заказчиков и командные фокусы недели.</p>
             </div>
-            <Link className="rr-btn rr-btn-secondary" href="/requests">
-              Все заявки заказчиков
-            </Link>
+            <div className="flex flex-wrap gap-2">
+              <Link className="rr-btn rr-btn-secondary" href="/requests">
+                Все заявки заказчиков
+              </Link>
+              <Link className="rr-btn rr-btn-secondary" href="/offer-center">
+                Центр офферов
+              </Link>
+            </div>
           </div>
           <div className="rr-ops-grid">
             <RequestsInbox variant="home" />
