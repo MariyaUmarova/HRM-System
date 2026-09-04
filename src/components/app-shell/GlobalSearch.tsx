@@ -23,7 +23,7 @@ export function GlobalSearch() {
         ref={inputRef}
         aria-label="Глобальный поиск"
         name="q"
-        placeholder="Найти инструкцию, скрипт или шаблон"
+        placeholder="Поиск по ситуациям, скриптам, шагам и источникам"
         type="search"
       />
       <kbd>Ctrl K</kbd>
