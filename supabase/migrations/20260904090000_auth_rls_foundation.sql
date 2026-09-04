@@ -8,8 +8,6 @@
 create schema if not exists private;
 revoke all on schema private from public, anon, authenticated;
 
-after_begin:
-
 create table public.profiles (
   id uuid primary key references auth.users(id) on delete cascade,
   email text not null unique,
@@ -194,7 +192,7 @@ returns text
 language sql
 stable
 security definer
-set search_path = public, pg_temp
+set search_path = pg_catalog, public
 as $$
   select p.role
   from public.profiles as p
@@ -208,7 +206,7 @@ returns boolean
 language sql
 stable
 security definer
-set search_path = public, pg_temp
+set search_path = pg_catalog, public
 as $$
   select coalesce(private.current_app_role() in ('head_of_recruitment', 'hrd'), false)
 $$;
