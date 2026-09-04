@@ -2,6 +2,10 @@
 -- Supabase recommends an empty search_path for SECURITY DEFINER functions and
 -- wrapping stable auth/helper calls in SELECT so Postgres can evaluate them once
 -- per statement instead of once per row.
+--
+-- Product boundary: the original Customer request is visible only to its Customer
+-- and to Head of Recruitment / HRD. Assignment metadata does not grant Recruiter
+-- direct access to the source request row.
 
 create or replace function private.current_app_role()
 returns text
@@ -62,10 +66,6 @@ using (
   or (
     (select private.current_app_role()) = 'customer'
     and customer_id = (select auth.uid())
-  )
-  or (
-    (select private.current_app_role()) = 'recruiter'
-    and assigned_recruiter_id = (select auth.uid())
   )
 );
 
