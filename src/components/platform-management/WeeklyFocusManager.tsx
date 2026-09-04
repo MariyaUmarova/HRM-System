@@ -119,7 +119,7 @@ export function WeeklyFocusManager() {
   }
 
   return (
-    <section className="mt-6 rounded-2xl border border-border bg-surface p-5 shadow-sm" aria-labelledby="weekly-focus-management-title">
+    <section id="weekly-focus" className="mt-6 scroll-mt-24 rounded-2xl border border-border bg-surface p-5 shadow-sm" aria-labelledby="weekly-focus-management-title">
       <div className="flex flex-wrap items-start justify-between gap-3">
         <div>
           <h2 id="weekly-focus-management-title" className="text-base font-semibold text-foreground">Фокусы недели</h2>
