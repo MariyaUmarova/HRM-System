@@ -1,10 +1,13 @@
 import { contentHref, RECRUIT_KIND_LABELS } from "./links";
 import { getRecruitContent } from "./source";
+import { WORKFLOW_STAGES } from "@/lib/workflow/stages";
 import type { RecruitContentKind } from "./types";
+
+export type RecruitSearchKind = RecruitContentKind | "workflow";
 
 export interface RecruitSearchResult {
   id: string;
-  kind: RecruitContentKind;
+  kind: RecruitSearchKind;
   title: string;
   summary: string;
   meta: string;
@@ -20,7 +23,7 @@ function tokens(value: string): string[] {
   return normalise(value).split(/[^a-zа-я0-9]+/i).filter(Boolean);
 }
 
-function scoreText(query: string, title: string, haystack: string, kind: RecruitContentKind): number {
+function scoreText(query: string, title: string, haystack: string, kind: RecruitSearchKind): number {
   const q = normalise(query);
   if (!q) return 0;
   const qTokens = tokens(q);
@@ -46,6 +49,17 @@ export function searchRecruitContent(query: string): RecruitSearchResult[] {
   const snapshot = getRecruitContent();
   const candidates: Array<Omit<RecruitSearchResult, "score"> & { haystack: string }> = [];
 
+  for (const stage of WORKFLOW_STAGES) {
+    candidates.push({
+      id: stage.id,
+      kind: "workflow",
+      title: stage.title,
+      summary: stage.shortDescription,
+      meta: `Этап ${stage.order}`,
+      href: `/workflow/${stage.id}`,
+      haystack: JSON.stringify(stage),
+    });
+  }
   for (const item of snapshot.scenarios) {
     candidates.push({
       id: item.id,
