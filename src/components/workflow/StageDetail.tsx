@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { currentWorkflowTexts } from "@/lib/workflow/current-ia";
 import { getAdjacentStages, type WorkflowStage } from "@/lib/workflow/stages";
 
 function Block({ title, children }: { title: string; children: React.ReactNode }) {
@@ -50,12 +51,12 @@ export function StageDetail({ stage }: { stage: WorkflowStage }) {
       </div>
 
       <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-        <Block title="Вход в процесс"><BulletList items={stage.entry} /></Block>
-        <Block title="Участники"><BulletList items={stage.participants} /></Block>
-        <Block title="Что сделать"><BulletList items={stage.whatToDo} /></Block>
-        <Block title="Как сделать"><OrderedList items={stage.howTo} /></Block>
-        <Block title="SLA и эскалация"><BulletList items={stage.sla} /></Block>
-        <Block title="Процесс завершён, когда"><BulletList items={stage.doneWhen} /></Block>
+        <Block title="Вход в процесс"><BulletList items={currentWorkflowTexts(stage.id, stage.entry)} /></Block>
+        <Block title="Участники"><BulletList items={currentWorkflowTexts(stage.id, stage.participants)} /></Block>
+        <Block title="Что сделать"><BulletList items={currentWorkflowTexts(stage.id, stage.whatToDo)} /></Block>
+        <Block title="Как сделать"><OrderedList items={currentWorkflowTexts(stage.id, stage.howTo)} /></Block>
+        <Block title="SLA и эскалация"><BulletList items={currentWorkflowTexts(stage.id, stage.sla)} /></Block>
+        <Block title="Процесс завершён, когда"><BulletList items={currentWorkflowTexts(stage.id, stage.doneWhen)} /></Block>
       </div>
 
       <div className="flex flex-wrap gap-2">
