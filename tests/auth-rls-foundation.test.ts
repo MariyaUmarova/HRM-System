@@ -99,15 +99,14 @@ describe("Phase 1 auth/RLS migration", () => {
     );
   });
 
-  it("isolates requests by customer and assigned recruiter while management can read all", () => {
+  it("isolates source requests to their Customer and management only", () => {
     const compact = normalized(hardeningSql);
     expect(compact).toContain("(select private.is_management_user())");
     expect(compact).toContain(
       "(select private.current_app_role()) = 'customer' and customer_id = (select auth.uid())",
     );
-    expect(compact).toContain(
-      "(select private.current_app_role()) = 'recruiter' and assigned_recruiter_id = (select auth.uid())",
-    );
+    expect(compact).not.toContain("(select private.current_app_role()) = 'recruiter'");
+    expect(compact).not.toContain("assigned_recruiter_id = (select auth.uid())");
     expect(normalized(foundationSql)).toContain(
       "from public.intake_requests as request where request.id = intake_request_events.request_id",
     );
