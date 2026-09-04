@@ -1,9 +1,10 @@
 import fs from "node:fs";
 import path from "node:path";
-import { RECRUIT_SOURCE_RELATIVE_PATH } from "./source";
+import { RECRUIT_SOURCE_RELATIVE_PATH } from "./source-path";
 import type { RecruitTemplate } from "./types";
 
 const ALLOWED_EMBEDDED_TEMPLATE_IDS = new Set(["offer-template"]);
+let cachedTemplates: RecruitTemplate[] | null = null;
 
 export interface EmbeddedTemplateDownload {
   bytes: Buffer;
@@ -39,13 +40,19 @@ function balancedArray(text: string, start: number): string {
 }
 
 function rawTemplates(): RecruitTemplate[] {
-  const html = fs.readFileSync(path.join(process.cwd(), RECRUIT_SOURCE_RELATIVE_PATH), "utf8");
+  if (cachedTemplates) return cachedTemplates;
+  const file = path.join(process.cwd(), "docs", "references", "v7_4", "ivideon-recruit-standalone-v7_4.html");
+  if (!file.endsWith(RECRUIT_SOURCE_RELATIVE_PATH)) {
+    throw new Error("Recruit source path mismatch");
+  }
+  const html = fs.readFileSync(file, "utf8");
   const marker = "window.TEMPLATES";
   const markerIndex = html.indexOf(marker);
   if (markerIndex < 0) throw new Error("Recruit source is missing window.TEMPLATES");
   const start = html.indexOf("[", markerIndex);
   if (start < 0) throw new Error("Recruit templates payload is missing");
-  return JSON.parse(balancedArray(html, start)) as RecruitTemplate[];
+  cachedTemplates = JSON.parse(balancedArray(html, start)) as RecruitTemplate[];
+  return cachedTemplates;
 }
 
 function safeFileName(template: RecruitTemplate, contentType: string): string {
