@@ -31,8 +31,6 @@ export function RecruitHome({ operations }: { operations?: ReactNode }) {
         </form>
       </section>
 
-      {operations ? <section className="rr-ops">{operations}</section> : null}
-
       <section className="rr-home-route-card">
         <div className="rr-section-head">
           <div>
@@ -74,7 +72,7 @@ export function RecruitHome({ operations }: { operations?: ReactNode }) {
         />
         <ResourceCard
           icon="✎"
-          title="Скрипты"
+          title="Скрипты и шаблоны"
           description="Готовые тексты, файлы и чек-листы."
           href="/scripts"
           linkLabel="Открыть скрипты"
@@ -96,6 +94,8 @@ export function RecruitHome({ operations }: { operations?: ReactNode }) {
           linkLabel="Открыть HR Radar"
         />
       </div>
+
+      {operations ? <section className="rr-ops">{operations}</section> : null}
     </>
   );
 }
@@ -126,7 +126,7 @@ function ResourceCard({
       </div>
       <Link className="rr-resource-link" href={href}>{linkLabel} →</Link>
       {secondaryHref && secondaryLabel ? (
-        <Link className="rr-resource-sub-link" href={secondaryHref}>{secondaryLabel} →</Link>
+        <Link className="rr-resource-sub-link" href={secondaryHref}>{secondaryLabel}</Link>
       ) : null}
     </article>
   );
