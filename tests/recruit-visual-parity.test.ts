@@ -60,11 +60,13 @@ describe("Recruit standalone visual anchors", () => {
 
   it("keeps standalone playbook card information order and source labels", () => {
     const catalog = read("src/components/recruit/ScenarioCatalog.tsx");
+    const labels = read("src/lib/recruit-content/source-labels.ts");
     const parity = read("src/app/recruit-reference-parity.css");
 
-    expect(catalog).toContain('confirmed: "Подтверждено внутренним документом"');
-    expect(catalog).toContain('inferred: "Выведено из нескольких документов"');
-    expect(catalog).toContain('proposed: "Предлагаемая практика — нужно согласование Head"');
+    expect(catalog).toContain('import { recruitSourceLabel } from "@/lib/recruit-content/source-labels"');
+    expect(labels).toContain('confirmed: "Подтверждено внутренним документом"');
+    expect(labels).toContain('inferred: "Выведено из нескольких документов"');
+    expect(labels).toContain('proposed: "Предлагаемая практика — нужно согласование Head"');
     expect(catalog).toContain('className={`rr-status ${confidence}`}');
     expect(catalog).toContain('item.category ? <span className="rr-tag">{item.category}</span>');
     expect(catalog).toContain('item.stage ? <span className="rr-tag">{item.stage}</span>');
