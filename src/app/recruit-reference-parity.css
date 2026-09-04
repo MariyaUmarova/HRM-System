@@ -1,0 +1,47 @@
+/*
+ * High-value visual parity rules copied from the final cascade of the
+ * Product Owner's uploaded Ivideon Recruit standalone reference.
+ *
+ * Keep this file small and literal: it exists to prevent framework defaults or
+ * shared HR Hub styles from changing reference typography/layout metrics.
+ */
+.rr-app{
+  font-family:Inter,ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
+  -webkit-font-smoothing:antialiased;
+}
+.rr-app button,.rr-app input,.rr-app select,.rr-app textarea{font:inherit}
+.rr-app button:focus-visible,
+.rr-app a:focus-visible,
+.rr-app input:focus-visible,
+.rr-app select:focus-visible,
+.rr-app textarea:focus-visible,
+.rr-app summary:focus-visible{outline:3px solid rgba(32,83,248,.28);outline-offset:2px}
+
+.rr-full-route-summary .rr-route-number{width:40px;height:40px}
+.rr-material>span{min-width:0}
+.rr-material strong{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.rr-template-card h3{margin:2px 0 7px}
+
+.rr-status{display:inline-flex;align-items:center;border-radius:999px;padding:5px 9px;font-size:11px;font-weight:800}
+.rr-status.confirmed,.rr-status.current{background:var(--rr-greenbg);color:var(--rr-green)}
+.rr-status.proposed,.rr-status.mixed,.rr-status.review{background:var(--rr-amberbg);color:var(--rr-amber)}
+.rr-status.legal{background:var(--rr-redbg);color:var(--rr-red)}
+.rr-status.inferred,.rr-status.approved{background:var(--rr-blue50);color:var(--rr-blue)}
+.rr-status.returned{background:var(--rr-amberbg);color:var(--rr-amber)}
+.rr-status.rejected{background:var(--rr-redbg);color:var(--rr-red)}
+
+/* Preserve desktop toolbar geometry without inline styles defeating the global
+ * <=900px responsive breakpoint. */
+.rr-toolbar-scenarios{grid-template-columns:minmax(0,1fr) 260px}
+.rr-toolbar-scenarios>input,.rr-toolbar-scenarios>select{min-width:0;width:100%}
+.rr-toolbar-search{grid-template-columns:minmax(0,1fr) auto}
+.rr-toolbar-search>input{min-width:0;width:100%}
+
+@media(max-width:900px){
+  .rr-toolbar-scenarios,.rr-toolbar-search{grid-template-columns:minmax(0,1fr)}
+  .rr-toolbar-search>.rr-btn{width:100%}
+}
+
+@media(max-width:720px){
+  .rr-material strong{white-space:normal}
+}

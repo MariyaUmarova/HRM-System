@@ -1,3 +1,5 @@
+import { splitEmploymentCriteria } from "./employment-criteria-guard";
+
 export interface AnalysisItem {
   id: string;
   text: string;
@@ -28,6 +30,15 @@ export interface InterviewFileDescriptor {
   name: string;
   size: number;
   kind: InterviewFileKind;
+}
+
+export interface LocalInterviewAnalysisInput {
+  criteria: string;
+  notes?: string;
+  summary?: string;
+  feedback?: string;
+  importantChecks?: string;
+  vacancyTitle?: string;
 }
 
 export const INTERVIEW_MATERIAL_OPTIONS: Array<{
@@ -222,4 +233,207 @@ export function createSyntheticInterviewResult(): InterviewAnalysis {
     questions: SYNTHETIC_RESULT.questions.map((item) => ({ ...item })),
     huntflowDraft: SYNTHETIC_RESULT.huntflowDraft,
   };
+}
+
+const MATCH_STOP_WORDS = new Set([
+  "который",
+  "которая",
+  "которые",
+  "работа",
+  "работы",
+  "опыт",
+  "навык",
+  "навыки",
+  "умение",
+  "знание",
+  "знания",
+  "готовность",
+  "кандидат",
+  "клиент",
+  "команда",
+  "через",
+  "после",
+  "перед",
+  "этого",
+  "этой",
+  "этот",
+  "были",
+  "была",
+  "было",
+  "есть",
+  "для",
+  "или",
+  "при",
+  "как",
+  "что",
+]);
+
+function textTokens(value: string): string[] {
+  return normalize(value)
+    .toLocaleLowerCase("ru-RU")
+    .replaceAll("ё", "е")
+    .split(/[^a-zа-я0-9+#.-]+/i)
+    .map((token) => token.replace(/^[.-]+|[.-]+$/g, ""))
+    .filter((token) => token.length >= 3 && !MATCH_STOP_WORDS.has(token));
+}
+
+function tokensMatch(left: string, right: string): boolean {
+  if (left === right) return true;
+  if (left.length < 5 || right.length < 5) return false;
+  const common = Math.min(6, left.length, right.length);
+  return left.slice(0, common) === right.slice(0, common);
+}
+
+function statementScore(criterion: string, statement: string): number {
+  const criterionTokens = textTokens(criterion);
+  if (!criterionTokens.length) return 0;
+  const statementTokens = textTokens(statement);
+  const matched = criterionTokens.filter((criterionToken) =>
+    statementTokens.some((statementToken) => tokensMatch(criterionToken, statementToken)),
+  ).length;
+  const phraseBonus = normalize(statement)
+    .toLocaleLowerCase("ru-RU")
+    .includes(normalize(criterion).toLocaleLowerCase("ru-RU"))
+    ? 1
+    : 0;
+  return matched / criterionTokens.length + phraseBonus;
+}
+
+function splitStatements(value: string): string[] {
+  return normalize(value)
+    .replace(/([.!?])\s+/g, "$1\n")
+    .split(/\n+/)
+    .map((line) => line.trim())
+    .filter((line) => line.length >= 12);
+}
+
+function uniqueStatements(values: string[]): string[] {
+  const seen = new Set<string>();
+  return values.filter((value) => {
+    const key = normalize(value).toLocaleLowerCase("ru-RU");
+    if (!key || seen.has(key)) return false;
+    seen.add(key);
+    return true;
+  });
+}
+
+function evidenceText(statement: string): string {
+  const cleaned = statement.replace(/^(кандидат|интервьюер|рекрутер|заказчик)\s*:\s*/i, "").trim();
+  const clipped = cleaned.length > 360 ? `${cleaned.slice(0, 357).trimEnd()}…` : cleaned;
+  return `«${clipped}»`;
+}
+
+function inputList(value: string): string[] {
+  return normalize(value)
+    .split(/\n|;/)
+    .map((item) => item.trim())
+    .filter(Boolean)
+    .slice(0, 12);
+}
+
+/**
+ * Browser-safe deterministic preview for de-identified text.
+ *
+ * This is intentionally NOT an AI/model call. It finds lexical evidence for vacancy
+ * criteria, exposes the exact supporting text, and turns missing evidence into questions.
+ * Sensitive employment criteria are excluded before matching and can never become
+ * supporting facts, conclusions or Huntflow criteria.
+ */
+export function createLocalInterviewAnalysis(input: LocalInterviewAnalysisInput): InterviewAnalysis {
+  const criteriaSplit = splitEmploymentCriteria(input.criteria);
+  const criteria = criteriaSplit.allowed.slice(0, 12);
+  const checksSplit = splitEmploymentCriteria(input.importantChecks ?? "");
+  const allowedChecks = checksSplit.allowed.slice(0, 12);
+  const blockedCriteria = uniqueStatements([
+    ...criteriaSplit.blocked,
+    ...checksSplit.blocked,
+  ]).slice(0, 12);
+  const statements = uniqueStatements([
+    ...splitStatements(input.notes ?? ""),
+    ...splitStatements(input.summary ?? ""),
+    ...splitStatements(input.feedback ?? ""),
+  ]);
+
+  const matches = criteria.map((criterion) => {
+    const ranked = statements
+      .map((statement) => ({ statement, score: statementScore(criterion, statement) }))
+      .sort((a, b) => b.score - a.score);
+    const best = ranked[0];
+    return {
+      criterion,
+      evidence: best && best.score >= 0.34 ? best.statement : null,
+      score: best?.score ?? 0,
+    };
+  });
+
+  const matched = matches.filter((item) => item.evidence);
+  const unmatched = matches.filter((item) => !item.evidence);
+
+  const facts: AnalysisItem[] = matched.slice(0, 6).map((item, index) => ({
+    id: `local-fact-${index + 1}`,
+    text: `По критерию «${item.criterion}» в материале найдено прямое текстовое свидетельство.`,
+    evidence: evidenceText(item.evidence ?? ""),
+  }));
+
+  if (!facts.length) {
+    statements.slice(0, 3).forEach((statement, index) => {
+      facts.push({
+        id: `local-fact-${index + 1}`,
+        text: "В материале зафиксировано утверждение, которое рекрутеру нужно интерпретировать вручную.",
+        evidence: evidenceText(statement),
+      });
+    });
+  }
+
+  const conclusions: AnalysisItem[] = matched.slice(0, 6).map((item, index) => ({
+    id: `local-conclusion-${index + 1}`,
+    text: `Критерий «${item.criterion}» предварительно поддерживается найденным свидетельством; окончательную оценку делает рекрутер.`,
+    basis: `Факт ${Math.min(index + 1, Math.max(1, facts.length))}`,
+  }));
+
+  const risks: AnalysisItem[] = blockedCriteria.map((criterion, index) => ({
+    id: `local-policy-block-${index + 1}`,
+    text: `Критерий «${criterion}» исключён из автоматического сопоставления: чувствительные характеристики нельзя использовать для оценки кандидата.`,
+  }));
+  unmatched.slice(0, Math.max(0, 8 - risks.length)).forEach((item, index) => {
+    risks.push({
+      id: `local-risk-${index + 1}`,
+      text: `В переданном тексте не найдено прямого подтверждения критерия «${item.criterion}». Это пробел в материале, а не отрицательная оценка кандидата.`,
+    });
+  });
+
+  const questions: AnalysisItem[] = unmatched.slice(0, 8).map((item, index) => ({
+    id: `local-question-${index + 1}`,
+    text: `Уточнить критерий «${item.criterion}»: попросить конкретный пример, роль кандидата, действия и измеримый результат.`,
+  }));
+
+  const existingQuestionText = questions.map((item) => item.text.toLocaleLowerCase("ru-RU")).join(" ");
+  allowedChecks.forEach((check) => {
+    if (questions.length >= 10 || existingQuestionText.includes(check.toLocaleLowerCase("ru-RU"))) return;
+    questions.push({
+      id: `local-question-check-${questions.length + 1}`,
+      text: `Дополнительно проверить: ${check}. Опирайтесь на конкретный пример из опыта, а не на общее самоописание.`,
+    });
+  });
+
+  if (!questions.length) {
+    questions.push({
+      id: "local-question-review",
+      text: "Попросить ещё один конкретный пример по самому критичному требованию вакансии и проверить роль кандидата, действия и результат.",
+    });
+  }
+
+  const confirmedCriteria = matched.map((item) => `• ${item.criterion}`).join("\n");
+  const missingCriteria = unmatched.map((item) => `• ${item.criterion}`).join("\n");
+  const vacancy = input.vacancyTitle?.trim() ? ` по вакансии «${input.vacancyTitle.trim()}»` : "";
+  const huntflowDraft = [
+    `Локальный предварительный разбор обезличенного материала${vacancy}. Не является AI-оценкой или решением о найме.`,
+    confirmedCriteria ? `\nВ тексте найдено прямое свидетельство по критериям:\n${confirmedCriteria}` : "",
+    missingCriteria ? `\nТребует дополнительной проверки — прямое свидетельство не найдено:\n${missingCriteria}` : "",
+    "\nПеред фиксацией в Huntflow рекрутер должен проверить цитаты, выводы и при необходимости переписать формулировки.",
+  ]
+    .filter(Boolean)
+    .join("\n");
+
+  return { facts, conclusions, risks, questions, huntflowDraft };
 }

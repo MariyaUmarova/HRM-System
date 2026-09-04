@@ -1,4 +1,4 @@
-import { notFound } from "next/navigation";
+import { notFound, redirect } from "next/navigation";
 import { AccessDenied } from "@/components/access/AccessDenied";
 import { Breadcrumbs } from "@/components/ui/Breadcrumbs";
 import { StageDetail } from "@/components/workflow/StageDetail";
@@ -18,12 +18,13 @@ export default async function StagePage({ params }: { params: Promise<{ stage: s
 
   const stage = getStageById(stageId);
   if (!stage) notFound();
+  if (stage.id === "adaptation") redirect("/backlog/adaptation");
 
   return (
     <div>
       <Breadcrumbs
         items={[
-          { label: "Моя работа", href: "/" },
+          { label: "Главная", href: "/" },
           { label: "Рабочий маршрут", href: "/workflow" },
           { label: stage.title },
         ]}
