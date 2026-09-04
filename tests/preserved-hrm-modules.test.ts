@@ -29,6 +29,16 @@ describe("preserved HR Hub modules remain discoverable", () => {
     expect(recruitReferenceHome).not.toContain('href="/hr-radar"');
   });
 
+  it("keeps weekly focus visible for recruiter and management home", () => {
+    const recruiterHome = read("src/components/home/RecruiterHome.tsx");
+    const leadHome = read("src/components/home/LeadHome.tsx");
+
+    expect(recruiterHome).toContain("WeeklyFocusCard");
+    expect(recruiterHome).toContain("Фокус недели");
+    expect(leadHome).toContain("WeeklyFocusCard");
+    expect(leadHome).toContain("командные фокусы недели");
+  });
+
   it("keeps customer-request entry points visible only in management home", () => {
     const recruiterHome = read("src/components/home/RecruiterHome.tsx");
     const leadHome = read("src/components/home/LeadHome.tsx");
