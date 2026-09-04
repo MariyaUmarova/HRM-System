@@ -30,13 +30,16 @@
 .rr-status.returned{background:var(--rr-amberbg);color:var(--rr-amber)}
 .rr-status.rejected{background:var(--rr-redbg);color:var(--rr-red)}
 
-/* Preserve the standalone desktop 1fr/260px scenarios toolbar without letting
- * an inline grid definition defeat the global <=900px mobile breakpoint. */
+/* Preserve desktop toolbar geometry without inline styles defeating the global
+ * <=900px responsive breakpoint. */
 .rr-toolbar-scenarios{grid-template-columns:minmax(0,1fr) 260px}
 .rr-toolbar-scenarios>input,.rr-toolbar-scenarios>select{min-width:0;width:100%}
+.rr-toolbar-search{grid-template-columns:minmax(0,1fr) auto}
+.rr-toolbar-search>input{min-width:0;width:100%}
 
 @media(max-width:900px){
-  .rr-toolbar-scenarios{grid-template-columns:minmax(0,1fr)}
+  .rr-toolbar-scenarios,.rr-toolbar-search{grid-template-columns:minmax(0,1fr)}
+  .rr-toolbar-search>.rr-btn{width:100%}
 }
 
 @media(max-width:720px){
