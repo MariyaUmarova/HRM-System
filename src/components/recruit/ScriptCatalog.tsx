@@ -6,8 +6,8 @@ import { contentHref } from "@/lib/recruit-content/links";
 import type { RecruitScript } from "@/lib/recruit-content/types";
 import { CopyButton } from "./CopyButton";
 
-export function ScriptCatalog({ scripts }: { scripts: RecruitScript[] }) {
-  const [query, setQuery] = useState("");
+export function ScriptCatalog({ scripts, initialQuery = "" }: { scripts: RecruitScript[]; initialQuery?: string }) {
+  const [query, setQuery] = useState(initialQuery);
   const [category, setCategory] = useState("Все категории");
   const [channel, setChannel] = useState("Все каналы");
   const categories = useMemo(
