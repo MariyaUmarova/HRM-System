@@ -1,34 +1,14 @@
-import { notFound } from "next/navigation";
-import { AccessDenied } from "@/components/access/AccessDenied";
-import { Breadcrumbs } from "@/components/ui/Breadcrumbs";
-import { KnowledgeItemDetail } from "@/components/knowledge-base/KnowledgeItemDetail";
-import { checkAccess } from "@/lib/auth/require-role";
-import { getPreviewRole } from "@/lib/auth/session";
-import { getKnowledgeItem, KNOWLEDGE_ITEMS } from "@/lib/knowledge-base/data";
+import { redirect } from "next/navigation";
+import { referenceForId } from "@/lib/recruit-content/catalog";
+import { contentHref } from "@/lib/recruit-content/links";
+import { getRecruitContent } from "@/lib/recruit-content/source";
 
-export function generateStaticParams() {
-  return KNOWLEDGE_ITEMS.map((i) => ({ id: i.id }));
-}
-
-export default async function KnowledgeItemPage({ params }: { params: Promise<{ id: string }> }) {
+export default async function LegacyKnowledgeItemRedirect({
+  params,
+}: {
+  params: Promise<{ id: string }>;
+}) {
   const { id } = await params;
-  const role = await getPreviewRole();
-  const gate = checkAccess(role, "knowledge_base");
-  if (!gate.allowed) return <AccessDenied requiredRoleLabel={gate.requiredRoleLabel} />;
-
-  const item = getKnowledgeItem(id);
-  if (!item) notFound();
-
-  return (
-    <div>
-      <Breadcrumbs
-        items={[
-          { label: "Моя работа", href: "/" },
-          { label: "База знаний", href: "/knowledge-base" },
-          { label: item.title },
-        ]}
-      />
-      <KnowledgeItemDetail item={item} />
-    </div>
-  );
+  const reference = referenceForId(getRecruitContent(), id);
+  redirect(reference ? contentHref(reference) : "/scenarios");
 }
