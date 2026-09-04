@@ -45,6 +45,19 @@ describe("Recruit standalone visual anchors", () => {
     expect(home).not.toContain('<span className="rr-route-arrow">›</span>');
   });
 
+  it("keeps the standalone full-route copy and material arrow", () => {
+    const workflow = read("src/app/(workspace)/workflow/page.tsx");
+
+    expect(workflow).toContain("От вакансии до адаптации");
+    expect(workflow).toContain("Полный рабочий маршрут");
+    expect(workflow).toContain("Основная инструкция этапа");
+    expect(workflow).toContain("Все материалы этапа");
+    expect(workflow).toContain("<b>→</b>");
+    expect(workflow).not.toContain("Дополнительные материалы");
+    expect(workflow).not.toContain("Основной материал этого этапа");
+    expect(workflow).not.toContain("<b>›</b>");
+  });
+
   it("pins final standalone typography, focus treatment and route detail metrics", () => {
     const parity = read("src/app/recruit-reference-parity.css");
 
