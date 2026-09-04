@@ -41,6 +41,15 @@ describe("preserved HR Hub modules remain discoverable", () => {
     expect(leadHome).toContain("командные фокусы недели");
   });
 
+  it("gives management a contextual weekly-focus editor entry without adding sidebar navigation", () => {
+    const leadHome = read("src/components/home/LeadHome.tsx");
+    const manager = read("src/components/platform-management/WeeklyFocusManager.tsx");
+
+    expect(leadHome).toContain('href="/platform-management#weekly-focus"');
+    expect(leadHome).toContain("Управлять фокусами");
+    expect(manager).toContain('id="weekly-focus"');
+  });
+
   it("keeps customer-request entry points visible only in management home", () => {
     const recruiterHome = read("src/components/home/RecruiterHome.tsx");
     const leadHome = read("src/components/home/LeadHome.tsx");
