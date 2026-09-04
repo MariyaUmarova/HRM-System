@@ -10,7 +10,7 @@ export function ChecklistCard({
 }: {
   id: string;
   title: string;
-  stage: string;
+  stage?: string;
   items: string[];
 }) {
   const [checked, setChecked] = useState<number[]>([]);
@@ -27,7 +27,7 @@ export function ChecklistCard({
   return (
     <article className="rr-card rr-check-card">
       <h3>{title}</h3>
-      <p className="rr-muted">{stage}</p>
+      {stage ? <p className="rr-muted">{stage}</p> : null}
       {items.map((item, index) => (
         <label key={`${id}:${index}`}>
           <input
