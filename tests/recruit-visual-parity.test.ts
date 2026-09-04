@@ -27,6 +27,22 @@ describe("Recruit standalone visual anchors", () => {
     expect(css).toContain(".rr-hero-search{display:flex;max-width:560px");
   });
 
+  it("keeps the standalone Home sequence before HRM-specific operational blocks", () => {
+    const home = read("src/components/recruit/RecruitHome.tsx");
+    const hero = home.indexOf('className="rr-hero"');
+    const route = home.indexOf('className="rr-home-route-card"');
+    const resources = home.indexOf('className="rr-resource-grid"');
+    const operations = home.indexOf('{operations ? <section className="rr-ops">');
+
+    expect(hero).toBeGreaterThanOrEqual(0);
+    expect(route).toBeGreaterThan(hero);
+    expect(resources).toBeGreaterThan(route);
+    expect(operations).toBeGreaterThan(resources);
+    expect(home).toContain('title="Скрипты и шаблоны"');
+    expect(home).toContain('description="Готовые тексты, файлы и чек-листы."');
+    expect(home).toContain('secondaryLabel="Шаблоны и чек-листы"');
+  });
+
   it("pins final standalone typography, focus treatment and route detail metrics", () => {
     const parity = read("src/app/recruit-reference-parity.css");
 
