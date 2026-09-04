@@ -24,7 +24,7 @@ export default async function StagePage({ params }: { params: Promise<{ stage: s
     <div>
       <Breadcrumbs
         items={[
-          { label: "Моя работа", href: "/" },
+          { label: "Главная", href: "/" },
           { label: "Рабочий маршрут", href: "/workflow" },
           { label: stage.title },
         ]}
