@@ -20,6 +20,7 @@ const routes = [
 ];
 
 const report = { baseUrl: base, desktop: [], mobile: [], errors: [] };
+const settle = () => new Promise((resolve) => setTimeout(resolve, 700));
 
 (async () => {
   const browser = await puppeteer.launch({
@@ -46,7 +47,12 @@ const report = { baseUrl: base, desktop: [], mobile: [], errors: [] };
       await page.setViewport({ width: 1440, height: 1000, deviceScaleFactor: 1 });
     }
 
-    const response = await page.goto(`${base}${route}`, { waitUntil: 'networkidle2', timeout: 45000 });
+    const response = await page.goto(`${base}${route}`, { waitUntil: 'domcontentloaded', timeout: 15000 });
+    await settle();
+    await page.evaluate(async () => {
+      if (document.fonts?.ready) await document.fonts.ready;
+    });
+
     const metrics = await page.evaluate(() => ({
       title: document.title,
       h1: document.querySelector('h1')?.textContent?.trim() || null,
@@ -91,11 +97,12 @@ const report = { baseUrl: base, desktop: [], mobile: [], errors: [] };
 
   const drawer = await browser.newPage();
   await drawer.setViewport({ width: 390, height: 844, deviceScaleFactor: 1, isMobile: true, hasTouch: true });
-  await drawer.goto(`${base}/`, { waitUntil: 'networkidle2', timeout: 45000 });
+  await drawer.goto(`${base}/`, { waitUntil: 'domcontentloaded', timeout: 15000 });
+  await settle();
   const menuButton = await drawer.$('button[aria-label="Открыть меню"]');
   if (menuButton) {
     await menuButton.click();
-    await new Promise((resolve) => setTimeout(resolve, 300));
+    await settle();
     await drawer.screenshot({ path: path.join(outDir, 'home-mobile-menu-open.png'), fullPage: true });
     report.mobileMenuCaptured = true;
   } else {
