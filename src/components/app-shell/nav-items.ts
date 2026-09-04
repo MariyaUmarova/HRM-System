@@ -17,6 +17,13 @@ export const NAV_ITEMS: NavItem[] = [
   { href: "/", label: "Главная", area: "recruiter_home", icon: "⌂" },
   { href: "/", label: "Главная", area: "management_home", icon: "⌂" },
   {
+    href: "/workflow",
+    label: "Рабочий маршрут",
+    area: "knowledge_base",
+    icon: "⇢",
+    group: "Рабочий процесс",
+  },
+  {
     href: "/scenarios",
     label: "Рабочие ситуации",
     area: "knowledge_base",
