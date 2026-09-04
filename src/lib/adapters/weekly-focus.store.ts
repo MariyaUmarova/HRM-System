@@ -98,7 +98,15 @@ export interface WeeklyFocusDraft {
   vacancyRef: HuntflowVacancyRef;
 }
 
+function assertSafeDraft(draft: WeeklyFocusDraft) {
+  if (!draft.title.trim() || !draft.priorityNote.trim()) throw new Error("Weekly focus text is required");
+  if (!RECRUITERS.some((recruiter) => recruiter.id === draft.ownerRecruiterId)) throw new Error("Unknown recruiter");
+  if (!draft.vacancyRef.externalId.trim() || !draft.vacancyRef.title.trim()) throw new Error("Huntflow reference is required");
+  if (!/^https:\/\//i.test(draft.vacancyRef.huntflowUrl.trim())) throw new Error("Unsafe Huntflow URL");
+}
+
 export function upsertWeeklyFocusItem(draft: WeeklyFocusDraft): WeeklyFocusItem {
+  assertSafeDraft(draft);
   const current = getWeeklyFocusSnapshot();
   const id = draft.id ?? `focus-${Date.now()}-${current.items.length + 1}`;
   const item: WeeklyFocusItem = {
