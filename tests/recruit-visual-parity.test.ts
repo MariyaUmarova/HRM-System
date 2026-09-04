@@ -42,4 +42,16 @@ describe("Recruit standalone visual anchors", () => {
     expect(parity).toContain("@media(max-width:720px)");
     expect(parity).toContain(".rr-material strong{white-space:normal}");
   });
+
+  it("does not let the scenarios desktop toolbar override the mobile breakpoint", () => {
+    const parity = read("src/app/recruit-reference-parity.css");
+    const catalog = read("src/components/recruit/ScenarioCatalog.tsx");
+
+    expect(catalog).toContain('className="rr-toolbar rr-toolbar-scenarios"');
+    expect(catalog).not.toContain('style={{ gridTemplateColumns: "1fr 260px" }}');
+    expect(parity).toContain(".rr-toolbar-scenarios{grid-template-columns:minmax(0,1fr) 260px}");
+    expect(parity).toContain(".rr-toolbar-scenarios>input,.rr-toolbar-scenarios>select{min-width:0;width:100%}");
+    expect(parity).toContain("@media(max-width:900px)");
+    expect(parity).toContain(".rr-toolbar-scenarios{grid-template-columns:minmax(0,1fr)}");
+  });
 });
