@@ -18,4 +18,18 @@ describe("Recruit global search", () => {
     expect(results.some((item) => item.kind === "tool" && item.href === "/interview-analysis")).toBe(true);
     expect(results.some((item) => item.kind === "workflow" && item.id === "hr-interview")).toBe(true);
   });
+
+  it("keeps adaptation search results in backlog", () => {
+    const result = searchRecruitContent("Сопровождаю адаптацию").find(
+      (item) => item.kind === "workflow" && item.id === "adaptation",
+    );
+
+    expect(result?.href).toBe("/backlog/adaptation");
+    expect(result?.meta).toBe("В бэклоге");
+  });
+
+  it("does not index the removed sourcing helper wording", () => {
+    const results = searchRecruitContent("AI-помощник по поиску");
+    expect(results.some((item) => item.kind === "workflow" && item.id === "sourcing")).toBe(false);
+  });
 });
