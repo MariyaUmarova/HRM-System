@@ -18,6 +18,9 @@ export function LeadHome({ role }: { role: Role }) {
               <Link className="rr-btn rr-btn-secondary" href="/requests">
                 Все заявки заказчиков
               </Link>
+              <Link className="rr-btn rr-btn-secondary" href="/platform-management#weekly-focus">
+                Управлять фокусами
+              </Link>
               <Link className="rr-btn rr-btn-secondary" href="/offer-center">
                 Центр офферов
               </Link>
