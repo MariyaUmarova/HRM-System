@@ -25,7 +25,7 @@ export function ScenarioCatalog({ scenarios }: { scenarios: RecruitScenario[] })
 
   return (
     <>
-      <div className="rr-toolbar" style={{ gridTemplateColumns: "1fr 260px" }}>
+      <div className="rr-toolbar rr-toolbar-scenarios">
         <input
           aria-label="Найти ситуацию"
           placeholder="Найти ситуацию"
