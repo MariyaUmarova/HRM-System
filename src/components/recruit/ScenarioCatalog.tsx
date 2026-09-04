@@ -5,6 +5,17 @@ import { useMemo, useState } from "react";
 import { contentHref } from "@/lib/recruit-content/links";
 import type { RecruitScenario } from "@/lib/recruit-content/types";
 
+const SOURCE_LABELS: Record<string, string> = {
+  confirmed: "Подтверждено внутренним документом",
+  inferred: "Выведено из нескольких документов",
+  proposed: "Предлагаемая практика — нужно согласование Head",
+  mixed: "Часть подтверждена, часть требует согласования",
+  legal: "Требует юридической проверки",
+  approved: "Практика утверждена Head",
+  returned: "Возвращено на доработку",
+  rejected: "Отклонено Head of Recruitment",
+};
+
 export function ScenarioCatalog({ scenarios }: { scenarios: RecruitScenario[] }) {
   const [query, setQuery] = useState("");
   const [category, setCategory] = useState("Все категории");
@@ -17,9 +28,7 @@ export function ScenarioCatalog({ scenarios }: { scenarios: RecruitScenario[] })
     return scenarios.filter((item) => {
       if (category !== "Все категории" && item.category !== category) return false;
       if (!q) return true;
-      return `${item.title} ${item.summary ?? ""} ${item.trigger ?? ""} ${item.stage ?? ""}`
-        .toLocaleLowerCase("ru-RU")
-        .includes(q);
+      return JSON.stringify(item).toLocaleLowerCase("ru-RU").includes(q);
     });
   }, [category, query, scenarios]);
 
@@ -41,25 +50,27 @@ export function ScenarioCatalog({ scenarios }: { scenarios: RecruitScenario[] })
         <div className="rr-empty"><strong>Ничего не найдено</strong>Попробуйте изменить запрос или категорию.</div>
       ) : (
         <div className="rr-grid rr-grid-3">
-          {filtered.map((item) => (
-            <Link
-              className="rr-card rr-clickable"
-              href={contentHref({ kind: "playbook", id: item.id })}
-              key={item.id}
-            >
-              <div className="rr-topline">
-                <span className="rr-tag">{item.category ?? "Playbook"}</span>
-                {item.stage ? <span className="rr-tag">{item.stage}</span> : null}
-              </div>
-              <h3>{item.title}</h3>
-              <p>{item.summary}</p>
-              <div className="rr-meta">
-                {item.sla ? <span className="rr-tag">SLA</span> : null}
-                {item.sourceConfidence ? <span className="rr-tag">{item.sourceConfidence}</span> : null}
-              </div>
-              <div className="rr-card-footer"><span>Открыть playbook</span><span>→</span></div>
-            </Link>
-          ))}
+          {filtered.map((item) => {
+            const confidence = item.sourceConfidence ?? "confirmed";
+            return (
+              <Link
+                className="rr-card rr-clickable"
+                href={contentHref({ kind: "playbook", id: item.id })}
+                key={item.id}
+              >
+                <div className="rr-topline">
+                  <span className={`rr-status ${confidence}`}>{SOURCE_LABELS[confidence] ?? confidence}</span>
+                </div>
+                <h3>{item.title}</h3>
+                <p>{item.summary}</p>
+                <div className="rr-meta">
+                  {item.category ? <span className="rr-tag">{item.category}</span> : null}
+                  {item.stage ? <span className="rr-tag">{item.stage}</span> : null}
+                </div>
+                <div className="rr-card-footer"><span>Открыть playbook</span><span>→</span></div>
+              </Link>
+            );
+          })}
         </div>
       )}
     </>
