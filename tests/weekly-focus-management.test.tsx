@@ -99,6 +99,17 @@ describe("weekly focus store", () => {
 });
 
 describe("WeeklyFocusManager", () => {
+  it("uses product language instead of environment and implementation jargon", () => {
+    render(<WeeklyFocusManager />);
+
+    expect(screen.getByText(/Сейчас изменения сохраняются только в этом браузере/)).toBeInTheDocument();
+    expect(screen.getByText(/Руководитель подбора и HRD управляют приоритетами команды/)).toBeInTheDocument();
+    expect(screen.getByRole("textbox", { name: "Ссылка на вакансию в Huntflow" })).toBeInTheDocument();
+    expect(screen.queryByText(/durable audit/i)).not.toBeInTheDocument();
+    expect(screen.queryByText(/текущего UAT/i)).not.toBeInTheDocument();
+    expect(screen.queryByText(/deep-link/i)).not.toBeInTheDocument();
+  });
+
   it("adds a human-confirmed focus and updates the recruiter card in the same browser", async () => {
     const user = userEvent.setup();
     render(
@@ -112,7 +123,10 @@ describe("WeeklyFocusManager", () => {
     await user.type(screen.getByRole("textbox", { name: "Приоритет недельного фокуса" }), "Проверить до пятницы");
     await user.type(screen.getByRole("textbox", { name: "Huntflow ID вакансии" }), "hf-vac-uat");
     await user.type(screen.getByRole("textbox", { name: "Название вакансии для фокуса" }), "UAT vacancy");
-    await user.type(screen.getByRole("textbox", { name: "Deep-link Huntflow" }), "https://huntflow.example/vacancy/uat");
+    await user.type(
+      screen.getByRole("textbox", { name: "Ссылка на вакансию в Huntflow" }),
+      "https://huntflow.example/vacancy/uat",
+    );
     await user.click(screen.getByRole("button", { name: "Сохранить фокус" }));
 
     expect(screen.getAllByText("Новый UAT-фокус")).toHaveLength(2);
