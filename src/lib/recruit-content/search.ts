@@ -51,6 +51,7 @@ export function searchRecruitContent(query: string): RecruitSearchResult[] {
   const candidates: Array<Omit<RecruitSearchResult, "score"> & { haystack: string }> = [];
 
   for (const stage of WORKFLOW_STAGES) {
+    const isAdaptationBacklog = stage.id === "adaptation";
     const currentStage = {
       ...stage,
       entry: currentWorkflowTexts(stage.id, stage.entry),
@@ -60,7 +61,10 @@ export function searchRecruitContent(query: string): RecruitSearchResult[] {
       sla: currentWorkflowTexts(stage.id, stage.sla),
       doneWhen: currentWorkflowTexts(stage.id, stage.doneWhen),
     };
-    const isAdaptationBacklog = stage.id === "adaptation";
+    const searchDocument = isAdaptationBacklog
+      ? { title: stage.title, shortDescription: stage.shortDescription, status: "В бэклоге" }
+      : currentStage;
+
     candidates.push({
       id: stage.id,
       kind: "workflow",
@@ -68,7 +72,7 @@ export function searchRecruitContent(query: string): RecruitSearchResult[] {
       summary: stage.shortDescription,
       meta: isAdaptationBacklog ? "В бэклоге" : `Этап ${stage.order}`,
       href: isAdaptationBacklog ? "/backlog/adaptation" : `/workflow/${stage.id}`,
-      haystack: JSON.stringify(currentStage),
+      haystack: JSON.stringify(searchDocument),
     });
   }
   for (const item of snapshot.scenarios) {
