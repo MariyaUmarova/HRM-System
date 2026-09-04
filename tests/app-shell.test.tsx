@@ -25,4 +25,17 @@ describe("AppShell profile header", () => {
     expect(screen.queryByText("Предпросмотр роли (dev)")).not.toBeInTheDocument();
     expect(screen.getByLabelText("Текущий профиль: Руководитель подбора")).toBeInTheDocument();
   });
+
+  it("keeps the standalone quick candidate CTA as a working scripts entry point", () => {
+    render(
+      <AppShell role="recruiter">
+        <p>Рабочая область</p>
+      </AppShell>,
+    );
+
+    expect(screen.getByRole("link", { name: "✦ Написать кандидату" })).toHaveAttribute(
+      "href",
+      "/scripts?q=кандидат",
+    );
+  });
 });
