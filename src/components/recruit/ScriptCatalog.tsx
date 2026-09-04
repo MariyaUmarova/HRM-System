@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useMemo, useState } from "react";
 import { contentHref } from "@/lib/recruit-content/links";
+import { recruitSourceLabel } from "@/lib/recruit-content/source-labels";
 import type { RecruitScript } from "@/lib/recruit-content/types";
 import { CopyButton } from "./CopyButton";
 
@@ -24,7 +25,7 @@ export function ScriptCatalog({ scripts }: { scripts: RecruitScript[] }) {
       if (category !== "Все категории" && item.category !== category) return false;
       if (channel !== "Все каналы" && item.channel !== channel) return false;
       if (!q) return true;
-      return `${item.title} ${item.text} ${item.category ?? ""} ${item.channel ?? ""}`.toLocaleLowerCase("ru-RU").includes(q);
+      return JSON.stringify(item).toLocaleLowerCase("ru-RU").includes(q);
     });
   }, [category, channel, query, scripts]);
 
@@ -47,7 +48,7 @@ export function ScriptCatalog({ scripts }: { scripts: RecruitScript[] }) {
       </div>
 
       {filtered.length === 0 ? (
-        <div className="rr-empty"><strong>Ничего не найдено</strong>Попробуйте изменить запрос или фильтры.</div>
+        <div className="rr-empty"><strong>Скрипт не найден</strong>Попробуйте другой запрос.</div>
       ) : (
         <div className="rr-grid rr-grid-3">
           {filtered.map((item) => (
@@ -60,10 +61,13 @@ export function ScriptCatalog({ scripts }: { scripts: RecruitScript[] }) {
               </div>
               <div className="rr-script-text">{item.text}</div>
               <div className="rr-script-actions">
-                <CopyButton text={item.text} />
-                <Link className="rr-resource-link" style={{ gridColumn: "auto", marginTop: 0 }} href={contentHref({ kind: "script", id: item.id })}>
-                  Открыть →
-                </Link>
+                <small>{recruitSourceLabel(item.sourceConfidence)}</small>
+                <div className="rr-script-buttons">
+                  <CopyButton text={item.text} />
+                  <Link className="rr-btn rr-btn-ghost" href={contentHref({ kind: "script", id: item.id })}>
+                    Открыть
+                  </Link>
+                </div>
               </div>
             </article>
           ))}
