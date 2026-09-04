@@ -15,9 +15,14 @@ export async function RecruiterHome() {
               <h2>Рабочая зона рекрутера</h2>
               <p>Фокус недели и рабочие инструменты по текущим задачам.</p>
             </div>
-            <Link className="rr-btn rr-btn-secondary" href="/offer-center">
-              Центр офферов
-            </Link>
+            <div className="flex flex-wrap gap-2">
+              <Link className="rr-btn rr-btn-secondary" href="/offer-center">
+                Центр офферов
+              </Link>
+              <Link className="rr-btn rr-btn-secondary" href="/hr-radar">
+                HR Radar
+              </Link>
+            </div>
           </div>
           <div className="rr-ops-grid">
             <WeeklyFocusCard focus={focus} />
