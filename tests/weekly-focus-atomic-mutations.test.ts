@@ -59,7 +59,8 @@ describe("weekly focus atomic server mutations", () => {
   it("does not allow update to mutate closed rows or change status directly", () => {
     const update = functionSection("server_update_weekly_focus", "server_close_weekly_focus");
     expect(update).toContain("where id = p_focus_id and status = 'active' and updated_at = p_expected_updated_at");
-    expect(update).not.toMatch(/\bstatus\s*=/);
+    const setClause = update.split("update public.weekly_focus_items set")[1]?.split("where id = p_focus_id")[0] ?? "";
+    expect(setClause).not.toMatch(/\bstatus\s*=/);
   });
 
   it("writes one audit event inside every mutation function", () => {
