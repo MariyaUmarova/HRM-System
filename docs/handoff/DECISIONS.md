@@ -144,6 +144,17 @@ home.
   it.
 - Durable writes are server-controlled and audited; browser roles do not receive direct
   INSERT/UPDATE/DELETE privileges on weekly-focus storage.
+- Reviewed durable create/update/close operations are service-role-only database RPCs.
+  The future Next.js server layer must derive `actor_user_id` from the validated session;
+  it must never trust an actor id supplied by the browser.
+- Every successful durable weekly-focus mutation and its `audit_events` record are one
+  atomic database transaction: if audit fails, the business mutation fails too.
+- Update and close use optimistic concurrency. A weekly-focus row version must advance
+  strictly on every update, even for multiple writes inside one PostgreSQL transaction;
+  stale writes fail instead of silently overwriting a newer management edit.
+- `closed_at` must never precede the final `updated_at` row version.
+- Closed weekly-focus rows cannot be updated, reopened or physically deleted through the
+  reviewed mutation RPC contract.
 - The current accepted UI implementation may use browser/localStorage mock persistence
   until the approved HRM backend environment and real Auth/session boundary are ready.
   Mock persistence must never be described as production persistence.
