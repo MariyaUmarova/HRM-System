@@ -131,6 +131,26 @@ describe("WeeklyFocusManager", () => {
     expect(screen.queryByText(/deep-link/i)).not.toBeInTheDocument();
   });
 
+  it("rejects a non-Huntflow HTTPS link in the form without crashing or saving", async () => {
+    const user = userEvent.setup();
+    render(<WeeklyFocusManager />);
+    const before = getWeeklyFocusSnapshot().items.length;
+
+    await user.type(screen.getByRole("textbox", { name: "Задача недельного фокуса" }), "Фокус с чужой ссылкой");
+    await user.type(screen.getByRole("textbox", { name: "Приоритет недельного фокуса" }), "Не сохранять");
+    await user.type(screen.getByRole("textbox", { name: "Huntflow ID вакансии" }), "hf-bad-ui");
+    await user.type(screen.getByRole("textbox", { name: "Название вакансии для фокуса" }), "Bad UI ref");
+    await user.type(
+      screen.getByRole("textbox", { name: "Ссылка на вакансию в Huntflow" }),
+      "https://example.com/phishing",
+    );
+    await user.click(screen.getByRole("button", { name: "Сохранить фокус" }));
+
+    expect(screen.getByText("Укажите ссылку на вакансию в Huntflow.")).toBeInTheDocument();
+    expect(screen.getByRole("status")).toHaveTextContent("Исправьте поля. Фокус не изменён.");
+    expect(getWeeklyFocusSnapshot().items).toHaveLength(before);
+  });
+
   it("adds a human-confirmed focus and updates the recruiter card in the same browser", async () => {
     const user = userEvent.setup();
     render(
