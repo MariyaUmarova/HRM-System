@@ -2,8 +2,8 @@
 --
 -- Git-only foundation: this migration is intentionally not applied to any cloud project.
 -- The functions are designed for a future reviewed server adapter running as service_role.
--- Browser roles cannot execute them. The actor id must be derived from a validated server
--- session; it must never be accepted from an untrusted browser payload without that check.
+-- Browser roles cannot execute them. The actor id must be derived from a validated server session;
+-- it must never be accepted from an untrusted browser payload without that check.
 --
 -- Each mutation and its audit event run in one PostgreSQL statement/transaction. If the
 -- audit insert fails, the weekly-focus mutation fails with it.
