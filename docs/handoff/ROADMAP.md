@@ -45,7 +45,7 @@ tracks this. Do not merge the active product stack until the governance decision
 Important: the current connected Supabase account exposes only `ivideon-seabattle` and
 `tablereels`; no HRM project is visible. Do not use either project for HRM migrations.
 
-### 1B. Durable weekly-focus contract — prepared in Draft PR #21
+### 1B. Durable weekly-focus contract — prepared in Draft PRs #21 and #23
 
 - [x] Keep the management UI/browser flow in PR #20 with localStorage mock persistence.
 - [x] Define durable `weekly_focus_items` storage without a vacancy/candidate catalog.
@@ -55,8 +55,14 @@ Important: the current connected Supabase account exposes only `ivideon-seabattl
 - [x] Enforce Recruiter ownership and Head/HRD mutation actors at database level.
 - [x] Verify migration, RLS, role integrity, Huntflow-host checks, work-week checks and
   close lifecycle in ephemeral PostgreSQL.
-- [ ] Add reviewed server actions/RPCs for create/update/close with `audit_events` writes.
-- [ ] Replace the browser store with a server adapter only after the approved HRM dev
+- [x] Define service-role-only atomic create/update/close RPCs with `audit_events` writes.
+- [x] Add optimistic concurrency with a strictly advancing row version so stale management
+  writes cannot silently overwrite each other, including within one PostgreSQL transaction.
+- [x] Verify mutation privileges, stale-write rejection, closed-row rejection, role
+  integrity and mutation+audit rollback atomically in ephemeral PostgreSQL.
+- [ ] Add an Auth-bound Next.js server adapter/action layer that derives actor identity
+  from the validated session and calls the reviewed RPCs.
+- [ ] Replace the browser store with that server adapter only after the approved HRM dev
   environment and real Auth are available.
 - [ ] Browser-UAT the durable path across Head/HRD → Recruiter after server wiring.
 
