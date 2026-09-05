@@ -14,7 +14,7 @@ function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === "object" && value !== null;
 }
 
-function isAllowedHuntflowUrl(value: string): boolean {
+export function isAllowedHuntflowUrl(value: string): boolean {
   try {
     const url = new URL(value.trim());
     if (url.protocol !== "https:") return false;
