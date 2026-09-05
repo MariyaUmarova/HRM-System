@@ -32,10 +32,7 @@ describe("weekly focus store", () => {
 
     expect(getWeeklyFocusSnapshot().items.some((item) => item.id === created.id)).toBe(true);
 
-    upsertWeeklyFocusItem({
-      ...created,
-      title: "Проверить shortlist — обновлено",
-    });
+    upsertWeeklyFocusItem({ ...created, title: "Проверить shortlist — обновлено" });
     expect(getWeeklyFocusSnapshot().items.find((item) => item.id === created.id)?.title).toBe(
       "Проверить shortlist — обновлено",
     );
@@ -44,20 +41,44 @@ describe("weekly focus store", () => {
     expect(getWeeklyFocusSnapshot().items.some((item) => item.id === created.id)).toBe(false);
   });
 
-  it("rejects unsafe Huntflow links at the store boundary", () => {
-    expect(() =>
-      upsertWeeklyFocusItem({
-        title: "Небезопасный фокус",
-        priorityNote: "Не должен сохраниться",
-        ownerRecruiterId: "rec-1",
-        vacancyRef: {
-          externalId: "hf-bad",
-          title: "Bad ref",
-          department: "QA",
-          huntflowUrl: "javascript:alert(1)",
-        },
-      }),
-    ).toThrow("Unsafe Huntflow URL");
+  it("allows only Huntflow product domains and the synthetic UAT host", () => {
+    for (const huntflowUrl of [
+      "https://huntflow.example/vacancy/test",
+      "https://huntflow.ru/account/vacancy/1",
+      "https://app.huntflow.ru/account/vacancy/1",
+      "https://huntflow.kz/account/vacancy/1",
+      "https://app.huntflow.uz/account/vacancy/1",
+    ]) {
+      expect(() =>
+        upsertWeeklyFocusItem({
+          title: `Безопасная ссылка ${huntflowUrl}`,
+          priorityNote: "Разрешённый Huntflow host",
+          ownerRecruiterId: "rec-1",
+          vacancyRef: {
+            externalId: `hf-${huntflowUrl}`,
+            title: "Safe ref",
+            department: "QA",
+            huntflowUrl,
+          },
+        }),
+      ).not.toThrow();
+    }
+
+    for (const huntflowUrl of ["javascript:alert(1)", "https://example.com/huntflow", "https://huntflow.ru.evil.example/vacancy/1"]) {
+      expect(() =>
+        upsertWeeklyFocusItem({
+          title: "Небезопасный фокус",
+          priorityNote: "Не должен сохраниться",
+          ownerRecruiterId: "rec-1",
+          vacancyRef: {
+            externalId: "hf-bad",
+            title: "Bad ref",
+            department: "QA",
+            huntflowUrl,
+          },
+        }),
+      ).toThrow("Unsafe Huntflow URL");
+    }
   });
 
   it("ignores tampered browser state instead of rendering an unsafe link", () => {
@@ -77,7 +98,7 @@ describe("weekly focus store", () => {
               externalId: "hf-bad",
               title: "Bad ref",
               department: "QA",
-              huntflowUrl: "javascript:alert(1)",
+              huntflowUrl: "https://example.com/phishing",
             },
           },
         ],
