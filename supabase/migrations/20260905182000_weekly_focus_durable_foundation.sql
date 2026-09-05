@@ -68,6 +68,82 @@ create index weekly_focus_owner_active_week_idx
 create index weekly_focus_management_week_idx
   on public.weekly_focus_items (week_start desc, week_end desc, status, updated_at desc);
 
+-- Cross-row role integrity cannot be expressed as a CHECK constraint. This private
+-- trigger guard makes the durable contract match the product roles even if a future
+-- server-side caller passes a wrong profile id. It is not a browser-callable API.
+create or replace function private.validate_weekly_focus_roles()
+returns trigger
+language plpgsql
+security definer
+set search_path = ''
+as $$
+begin
+  if tg_op = 'INSERT'
+    or new.owner_recruiter_id is distinct from old.owner_recruiter_id then
+    if not exists (
+      select 1
+      from public.profiles as profile
+      where profile.id = new.owner_recruiter_id
+        and profile.role = 'recruiter'
+        and profile.is_active
+    ) then
+      raise exception 'weekly focus owner must be an active Recruiter'
+        using errcode = '23514';
+    end if;
+  end if;
+
+  if tg_op = 'INSERT' then
+    if not exists (
+      select 1
+      from public.profiles as profile
+      where profile.id = new.created_by
+        and profile.role in ('head_of_recruitment', 'hrd')
+        and profile.is_active
+    ) then
+      raise exception 'weekly focus creator must be active Head/HRD'
+        using errcode = '23514';
+    end if;
+  elsif new.created_by is distinct from old.created_by then
+    raise exception 'weekly focus created_by is immutable'
+      using errcode = '23514';
+  end if;
+
+  if not exists (
+    select 1
+    from public.profiles as profile
+    where profile.id = new.updated_by
+      and profile.role in ('head_of_recruitment', 'hrd')
+      and profile.is_active
+  ) then
+    raise exception 'weekly focus updater must be active Head/HRD'
+      using errcode = '23514';
+  end if;
+
+  if new.closed_by is not null
+    and (tg_op = 'INSERT' or new.closed_by is distinct from old.closed_by) then
+    if not exists (
+      select 1
+      from public.profiles as profile
+      where profile.id = new.closed_by
+        and profile.role in ('head_of_recruitment', 'hrd')
+        and profile.is_active
+    ) then
+      raise exception 'weekly focus closer must be active Head/HRD'
+        using errcode = '23514';
+    end if;
+  end if;
+
+  return new;
+end;
+$$;
+
+revoke all on function private.validate_weekly_focus_roles() from public, anon, authenticated;
+grant execute on function private.validate_weekly_focus_roles() to service_role;
+
+create trigger weekly_focus_items_validate_roles
+before insert or update on public.weekly_focus_items
+for each row execute function private.validate_weekly_focus_roles();
+
 create trigger weekly_focus_items_touch_updated_at
 before update on public.weekly_focus_items
 for each row execute function private.touch_updated_at();
