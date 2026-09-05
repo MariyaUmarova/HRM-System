@@ -57,6 +57,21 @@ describe("durable weekly focus foundation", () => {
     expect(compact).not.toContain("example.com");
   });
 
+  it("enforces Recruiter ownership and Head/HRD mutation actors in the database", () => {
+    expect(compact).toContain("create or replace function private.validate_weekly_focus_roles()");
+    expect(compact).toContain("security definer set search_path = ''");
+    expect(compact).toContain("profile.role = 'recruiter' and profile.is_active");
+    expect(compact).toContain("profile.role in ('head_of_recruitment', 'hrd') and profile.is_active");
+    expect(compact).toContain("weekly focus created_by is immutable");
+    expect(compact).toContain(
+      "revoke all on function private.validate_weekly_focus_roles() from public, anon, authenticated",
+    );
+    expect(compact).toContain(
+      "grant execute on function private.validate_weekly_focus_roles() to service_role",
+    );
+    expect(compact).toContain("create trigger weekly_focus_items_validate_roles");
+  });
+
   it("enables RLS and gives authenticated browser clients read-only table privileges", () => {
     expect(compact).toContain("alter table public.weekly_focus_items enable row level security;");
     expect(compact).toContain("revoke all on table public.weekly_focus_items from anon, authenticated;");
