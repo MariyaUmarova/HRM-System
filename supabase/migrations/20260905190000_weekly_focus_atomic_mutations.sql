@@ -8,6 +8,33 @@
 -- Each mutation and its audit event run in one PostgreSQL statement/transaction. If the
 -- audit insert fails, the weekly-focus mutation fails with it.
 
+-- `now()` is transaction-stable in PostgreSQL, so the shared touch_updated_at trigger is
+-- not a safe optimistic-concurrency version for two writes in one transaction. Weekly
+-- focus uses a strictly advancing version timestamp instead: wall-clock time when it has
+-- advanced, otherwise at least one microsecond after the previous row version.
+drop trigger weekly_focus_items_touch_updated_at on public.weekly_focus_items;
+
+create or replace function private.touch_weekly_focus_version()
+returns trigger
+language plpgsql
+set search_path = ''
+as $$
+begin
+  new.updated_at := greatest(
+    pg_catalog.clock_timestamp(),
+    old.updated_at + interval '1 microsecond'
+  );
+  return new;
+end;
+$$;
+
+revoke all on function private.touch_weekly_focus_version() from public, anon, authenticated;
+grant execute on function private.touch_weekly_focus_version() to service_role;
+
+create trigger weekly_focus_items_touch_version
+before update on public.weekly_focus_items
+for each row execute function private.touch_weekly_focus_version();
+
 create or replace function public.server_create_weekly_focus(
   p_actor_user_id uuid,
   p_owner_recruiter_id uuid,
@@ -176,7 +203,7 @@ begin
   set
     status = 'closed',
     closed_by = p_actor_user_id,
-    closed_at = pg_catalog.now(),
+    closed_at = pg_catalog.clock_timestamp(),
     updated_by = p_actor_user_id
   where id = p_focus_id
     and status = 'active'
