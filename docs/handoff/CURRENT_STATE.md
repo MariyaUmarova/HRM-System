@@ -128,8 +128,22 @@ Fresh GitHub checks on 2026-09-05 show:
 - repository rulesets are empty (`[]`);
 - issue #3 remains open.
 
-These are merge/security blockers. Do not change repository visibility, branch protection
-or owner-level security settings without a separate Product Owner decision.
+Public-reference exposure was also independently checked on 2026-09-05:
+- privacy-safe scan run `33984545632` inspected 191 tracked text files and found
+  **0 high-confidence credential files** and no phone candidates;
+- `docs/references/v7_4/ivideon-recruit-standalone-v7_4.html` contains 3 distinct
+  human-looking email addresses; 2 use the corporate `ivideon.tech` domain;
+- full email values were deliberately not printed in public logs;
+- the standalone must therefore be treated as **not public-safe until explicitly
+  sanitized/classified**;
+- `docs/references/v7_4/Recruitment_in_Ivideon.pdf` is public but remains content-
+  unclassified because the currently available binary path cannot be reviewed through
+  the required PDF screenshot workflow;
+- deleting a reference only in a future commit would not erase its existing public Git
+  history.
+
+These are merge/security blockers. Do not change repository visibility, branch protection,
+history or owner-level security settings without a separate Product Owner decision.
 
 ## Verification expectations
 
