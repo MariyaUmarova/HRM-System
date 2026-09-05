@@ -265,6 +265,8 @@ for select
 to authenticated
 using (private.is_management_user());
 
+-- Source customer requests are intentionally invisible to Recruiter even when assigned.
+-- Recruiter working context must come from an allowed derived artifact/Huntflow boundary.
 create policy intake_requests_authorized_read
 on public.intake_requests
 for select
@@ -274,10 +276,6 @@ using (
   or (
     private.current_app_role() = 'customer'
     and customer_id = auth.uid()
-  )
-  or (
-    private.current_app_role() = 'recruiter'
-    and assigned_recruiter_id = auth.uid()
   )
 );
 
