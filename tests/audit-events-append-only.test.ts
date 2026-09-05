@@ -17,6 +17,7 @@ describe("application audit history", () => {
   it("documents the application-vs-owner maintenance boundary", () => {
     expect(compact).toContain("application audit history is append-only");
     expect(compact).toContain("cannot rewrite or delete prior history");
-    expect(compact).toContain("database-owner maintenance");
+    expect(compact).toContain("database-owner");
+    expect(compact).toContain("maintenance remains outside the application role");
   });
 });
