@@ -14,6 +14,16 @@ function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === "object" && value !== null;
 }
 
+function localDateKey(value: unknown): string | null {
+  if (typeof value !== "string") return null;
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return null;
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, "0");
+  const day = String(date.getDate()).padStart(2, "0");
+  return `${year}-${month}-${day}`;
+}
+
 export function isAllowedHuntflowUrl(value: string): boolean {
   try {
     const url = new URL(value.trim());
@@ -54,7 +64,13 @@ function readStoredFocus(raw: string, currentWeek: WeeklyFocus): WeeklyFocus | n
   try {
     const parsed: unknown = JSON.parse(raw);
     if (!isRecord(parsed) || !Array.isArray(parsed.items)) return null;
-    if (parsed.rangeStart !== currentWeek.rangeStart || parsed.rangeEnd !== currentWeek.rangeEnd) return null;
+
+    const storedStart = localDateKey(parsed.rangeStart);
+    const storedEnd = localDateKey(parsed.rangeEnd);
+    const currentStart = localDateKey(currentWeek.rangeStart);
+    const currentEnd = localDateKey(currentWeek.rangeEnd);
+    if (!storedStart || !storedEnd || storedStart !== currentStart || storedEnd !== currentEnd) return null;
+
     if (!parsed.items.every(isSafeItem)) return null;
     return {
       rangeStart: currentWeek.rangeStart,
