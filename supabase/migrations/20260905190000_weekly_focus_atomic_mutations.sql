@@ -11,7 +11,8 @@
 -- `now()` is transaction-stable in PostgreSQL, so the shared touch_updated_at trigger is
 -- not a safe optimistic-concurrency version for two writes in one transaction. Weekly
 -- focus uses a strictly advancing version timestamp instead: wall-clock time when it has
--- advanced, otherwise at least one microsecond after the previous row version.
+-- advanced, otherwise at least one microsecond after the previous row version. For a
+-- close transition, closed_at is also brought forward to at least the same row version.
 drop trigger weekly_focus_items_touch_updated_at on public.weekly_focus_items;
 
 create or replace function private.touch_weekly_focus_version()
@@ -24,6 +25,11 @@ begin
     pg_catalog.clock_timestamp(),
     old.updated_at + interval '1 microsecond'
   );
+
+  if new.closed_at is not null and new.closed_at < new.updated_at then
+    new.closed_at := new.updated_at;
+  end if;
+
   return new;
 end;
 $$;
