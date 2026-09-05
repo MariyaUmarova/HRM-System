@@ -11,6 +11,15 @@ function normalized(value: string): string {
 
 const compact = normalized(sql);
 
+function functionSection(name: string, nextName?: string): string {
+  const start = compact.indexOf(`create or replace function public.${name}(`);
+  if (start < 0) return "";
+  const end = nextName
+    ? compact.indexOf(`create or replace function public.${nextName}(`, start + 1)
+    : compact.length;
+  return compact.slice(start, end < 0 ? compact.length : end);
+}
+
 describe("weekly focus atomic server mutations", () => {
   it("exposes exactly create/update/close server mutation functions", () => {
     expect(compact).toContain("create or replace function public.server_create_weekly_focus(");
@@ -31,10 +40,10 @@ describe("weekly focus atomic server mutations", () => {
       "server_close_weekly_focus",
     ]) {
       expect(compact).toContain(`revoke all on function public.${name}(`);
-      expect(compact).toContain("from public, anon, authenticated");
       expect(compact).toContain(`grant execute on function public.${name}(`);
     }
 
+    expect((compact.match(/from public, anon, authenticated;/g) ?? [])).toHaveLength(3);
     expect((compact.match(/\) to service_role;/g) ?? [])).toHaveLength(3);
     expect(compact).not.toMatch(/grant execute[^;]+to authenticated/);
     expect(compact).not.toMatch(/grant execute[^;]+to anon/);
@@ -48,37 +57,46 @@ describe("weekly focus atomic server mutations", () => {
   });
 
   it("does not allow update to mutate closed rows or change status directly", () => {
-    expect(compact).toContain("where id = p_focus_id and status = 'active' and updated_at = p_expected_updated_at");
-    expect(compact).not.toMatch(/server_update_weekly_focus[\s\S]+?set[\s\S]+?status\s*=/i);
+    const update = functionSection("server_update_weekly_focus", "server_close_weekly_focus");
+    expect(update).toContain("where id = p_focus_id and status = 'active' and updated_at = p_expected_updated_at");
+    expect(update).not.toMatch(/\bstatus\s*=/);
   });
 
   it("writes one audit event inside every mutation function", () => {
+    const create = functionSection("server_create_weekly_focus", "server_update_weekly_focus");
+    const update = functionSection("server_update_weekly_focus", "server_close_weekly_focus");
+    const close = functionSection("server_close_weekly_focus");
+
     expect((compact.match(/insert into public\.audit_events/g) ?? [])).toHaveLength(3);
-    expect(compact).toContain("'weekly_focus.created'");
-    expect(compact).toContain("'weekly_focus.updated'");
-    expect(compact).toContain("'weekly_focus.closed'");
+    expect(create).toContain("'weekly_focus.created'");
+    expect(update).toContain("'weekly_focus.updated'");
+    expect(close).toContain("'weekly_focus.closed'");
     expect((compact.match(/'weekly_focus_item'/g) ?? [])).toHaveLength(3);
   });
 
   it("keeps audit metadata minimal and free of focus narrative content", () => {
-    for (const field of [
-      "owner_recruiter_id",
-      "week_start",
-      "week_end",
-      "huntflow_vacancy_external_id",
-      "status",
-    ]) {
-      expect(compact).toContain(`'${field}'`);
-    }
+    const sections = [
+      functionSection("server_create_weekly_focus", "server_update_weekly_focus"),
+      functionSection("server_update_weekly_focus", "server_close_weekly_focus"),
+      functionSection("server_close_weekly_focus"),
+    ];
 
-    const auditSections = compact
-      .split("insert into public.audit_events")
-      .slice(1)
-      .join(" ");
-    expect(auditSections).not.toContain("priority_note");
-    expect(auditSections).not.toContain("huntflow_vacancy_title");
-    expect(auditSections).not.toContain("huntflow_vacancy_department");
-    expect(auditSections).not.toContain("huntflow_vacancy_url");
+    for (const section of sections) {
+      const audit = section.split("insert into public.audit_events")[1]?.split("return ")[0] ?? "";
+      for (const field of [
+        "owner_recruiter_id",
+        "week_start",
+        "week_end",
+        "huntflow_vacancy_external_id",
+        "status",
+      ]) {
+        expect(audit).toContain(`'${field}'`);
+      }
+      expect(audit).not.toContain("priority_note");
+      expect(audit).not.toContain("huntflow_vacancy_title");
+      expect(audit).not.toContain("huntflow_vacancy_department");
+      expect(audit).not.toContain("huntflow_vacancy_url");
+    }
   });
 
   it("documents that the actor must come from a validated server session", () => {
