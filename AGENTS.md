@@ -19,14 +19,24 @@ instructions.
 
 ## Current state
 
-- Next.js App Router, React, TypeScript and Tailwind frontend exists and builds.
-- Phase 1 uses synthetic mock adapters only.
-- 57 tests cover workflow order, roles, customer isolation, knowledge search,
-  tooltips and structural ATS-duplication guardrails.
-- The private GitHub source repository is `MariyaUmarova/HRM-System`; its `main`
-  baseline and CI are connected. Supabase, deployment, Huntflow, mail and AI are not
-  connected yet.
-- Do not report an integration as working until it has been implemented and verified.
+- Next.js App Router, React, TypeScript and Tailwind application exists and builds.
+- The active product work is a Draft PR stack; always read `docs/handoff/CURRENT_STATE.md`
+  and re-check GitHub before relying on PR numbers or head SHAs.
+- Recruit shell and selected standalone content are implemented on the current product
+  stack; weekly-focus management UI is implemented with browser/localStorage mock
+  persistence and has passed live browser UAT.
+- Git-only Auth/RLS and durable weekly-focus database foundations exist on later Draft
+  PRs and have passed ephemeral PostgreSQL verification. They are not runtime/cloud
+  integrations.
+- The GitHub repository is currently **public**, `main` is currently unprotected and
+  repository rulesets are empty. These are explicit governance/merge blockers, not a
+  desired final security state.
+- The current connected Supabase account exposes only `ivideon-seabattle` and
+  `tablereels`; no HRM project is visible. Never select a migration target from stale
+  historical docs/issues.
+- No HRM migration has been applied to a cloud project in the current stack.
+- Do not report an integration as working until it has been implemented and verified at
+  the appropriate runtime level.
 
 ## Non-negotiable product rules
 
@@ -40,8 +50,8 @@ instructions.
 - There is no separate Admin role.
 - HRBP, CEO and HR Operations/KDP may participate in processes but do not receive
   portal accounts in the first release.
-- Customer requests are visible only to Head of Recruitment and HRD. Head of
-  Recruitment assigns an accepted request to a recruiter.
+- Source Customer requests are visible only to their Customer and Head of Recruitment /
+  HRD. Assignment metadata does not grant Recruiter direct source-request access.
 - The knowledge base is a central recruiter workspace. Do not add courses, exams,
   tests or learning-progress tracking.
 - Do not add generic overdue-SLA, candidate-action or technical-error widgets to
@@ -90,29 +100,37 @@ Do not change the approved adaptation-stage content without explicit user approv
 
 ## Supabase safety rules
 
-- Use a dedicated development project with synthetic data. Never connect an AI agent
-  through MCP to production HR data.
+- Use a dedicated approved HRM development project with synthetic data. Never connect an
+  AI agent through MCP to production HR data.
 - Scope Supabase access to one project. Start read-only and enable only required tools.
 - Never commit or print secret keys, service-role keys, passwords, tokens or real PII.
 - Browser code may use only the project URL and publishable key.
 - Server secrets must remain server-only and must never use a `NEXT_PUBLIC_` prefix.
 - Enable RLS on every exposed table and write policies for the actual role and row
   boundaries. `TO authenticated` alone is not authorization.
-- Authorization roles belong in trusted server-managed data such as `app_metadata`,
-  not user-editable metadata.
+- Authorization roles belong in trusted server-managed data such as profiles/app
+  metadata, not user-editable metadata.
 - Schema changes must be reproducible in `supabase/migrations/` and reviewed in Git.
-- Run Supabase security/performance advisors and a test query before declaring a
-  database change complete.
+- Before applying migrations, independently verify that the selected cloud project is the
+  approved HRM environment. Never apply HRM migrations to another visible project merely
+  because it is connected.
+- Run database allow/deny tests plus Supabase security/performance advisors before
+  declaring an applied database change complete.
 - Check current Supabase docs and breaking-change notes before implementation.
 
 ## GitHub and delivery rules
 
-- The private GitHub repository becomes the source of code and documentation.
-- Work on a branch; use pull requests for review. Do not push directly to protected
-  `main` without explicit confirmation.
-- Never commit `.env.local`, credentials, build output or dependencies.
+- The GitHub repository is the source of code and documentation; its current public
+  visibility is a known governance risk, not permission to store HR PII or secrets.
+- Work on a branch and use pull requests for review.
+- Do not push directly to `main`, even while branch protection is currently absent.
+- Do not merge the active stack until the Product Owner explicitly resolves the
+  protection/ruleset/governance blocker.
+- Never commit `.env.local`, credentials, build output, dependencies, real CVs or real HR
+  data.
 - Before commit: inspect the diff and scan for secrets and personal data.
-- Before merge: run lint, tests and the production build.
+- Before merge: re-check head/base/review threads, run lint/tests/production build and
+  complete risk-proportionate runtime verification.
 - Do not deploy to production without explicit user confirmation.
 
 ## Engineering boundaries
@@ -124,6 +142,10 @@ Do not change the approved adaptation-stage content without explicit user approv
 - Preserve accessibility and responsive behavior from 320px.
 - The shared `?` tooltip must work with hover, keyboard focus, tap, outside click and
   collision-aware placement. Essential instructions cannot live only in tooltips.
+- For database/RLS changes, static string tests are not sufficient: execute migrations in
+  an isolated PostgreSQL/Supabase-compatible environment and verify both allow and deny
+  cases.
+- For user-visible changes, browser UAT is required before claiming completion.
 
 ## Commands
 
@@ -142,8 +164,10 @@ dependencies are installed.
 
 1. Inspect first; do not assume the repository matches a conversation summary.
 2. Restate the requested outcome and list files expected to change.
-3. For architecture, database, auth, external writes or deployment: propose a plan
-   and wait for approval before mutating external systems.
+3. For architecture, database, auth, external writes or deployment: propose a plan and
+   wait for approval before mutating external systems. Git-only design/test work may
+   proceed when it does not touch a cloud project, production or owner-level settings and
+   the Product Owner has already authorized autonomous safe continuation.
 4. Implement one vertical slice at a time.
 5. Verify proportionally to risk.
 6. Update `docs/handoff/CURRENT_STATE.md`, `ROADMAP.md` and `DECISIONS.md` when the
