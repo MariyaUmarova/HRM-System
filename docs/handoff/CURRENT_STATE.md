@@ -49,6 +49,24 @@ The active product work is stacked; none of these PRs may be merged independentl
      anon read nothing; authenticated browser has no write grants.
    - Database role-integrity guard requires a Recruiter owner and Head/HRD mutation actors.
    - CI #187 and ephemeral PostgreSQL run #33984079497 are green.
+5. PR #22 `codex/handoff-sync-20260905`
+   - Base: PR #21.
+   - Draft/open.
+   - Synchronizes `AGENTS.md` and handoff docs with the actual stack, current Supabase
+     visibility and repository-governance/public-reference findings.
+   - CI #189 is green.
+6. PR #23 `codex/weekly-focus-atomic-mutations`
+   - Base: PR #22.
+   - Draft/open.
+   - DB-verified code head: `4c08e5b93aefdac76fdb7c59d63e7c181c9b426f` before this handoff-only update.
+   - Adds service-role-only atomic create/update/close PostgreSQL RPCs for weekly focus.
+   - Every successful mutation writes `audit_events` in the same transaction.
+   - Update/close require optimistic concurrency; a strictly advancing weekly-focus row
+     version avoids PostgreSQL transaction-stable `now()` collisions.
+   - Closed rows cannot be updated/reopened/deleted through these RPCs.
+   - Browser roles cannot execute mutation RPCs; future server code must derive actor id
+     from the validated server session rather than a browser-supplied value.
+   - CI #196 and exact-head ephemeral PostgreSQL run #33985804259 are green.
 
 ## Product boundaries that remain mandatory
 
@@ -69,18 +87,20 @@ Weekly-focus management UI is implemented in PR #20 and browser-UAT verified.
 
 Current runtime behavior is still intentionally mock/local:
 - management changes are stored in localStorage;
-- there is no production server mutation path;
-- there is no production durable persistence;
+- the Next.js application has no real Auth-bound server adapter yet;
+- no approved HRM cloud database is connected;
 - no Huntflow mutation is performed.
 
-PR #21 defines the future durable database boundary only. It does not wire the UI to
-Supabase and does not replace the localStorage store.
+PR #21 defines the durable table/RLS boundary. PR #23 defines reviewed server-only
+PostgreSQL mutation RPCs plus atomic audit and optimistic concurrency. Neither PR wires
+the browser UI to Supabase or makes localStorage production persistence.
 
 ## Auth / database status
 
 PR #18 contains a Git-only Supabase/PostgreSQL schema foundation and has been exercised in
 an ephemeral PostgreSQL 16 environment. PR #21 extends that Git-only schema for weekly
-focus. Neither PR has been applied to any cloud project.
+focus; PR #23 adds server-only mutation functions. None has been applied to any cloud
+project.
 
 A read-only `Supabase.list_projects` check on 2026-09-05 shows only:
 - `ivideon-seabattle` (`teyilcysjsvitpkwyxom`);
@@ -102,15 +122,16 @@ The UAT branch contains only the temporary `/uat-review` role-switch routes on t
 verified product baseline. Those routes must never be copied into a production product
 branch.
 
-Database-only PRs #18/#21 do not have a browser runtime integration yet; their acceptance
-uses static regression tests plus ephemeral PostgreSQL execution/RLS checks.
+Database-only PRs #18/#21/#23 do not have a browser runtime integration yet; their
+acceptance uses static regression tests plus ephemeral PostgreSQL execution/RLS/mutation
+checks.
 
 ## Not implemented or connected
 
 - Real user authentication or SSO.
 - Runtime Supabase Auth/session integration in Next.js.
 - Approved HRM development/production Supabase environments.
-- Server actions/RPCs for durable weekly-focus create/update/close.
+- Auth-bound Next.js server actions/adapters that call the weekly-focus RPCs.
 - Replacement of the weekly-focus localStorage store by a server adapter.
 - Production customer-request persistence wiring in the UI.
 - Huntflow API synchronization or mutation.
