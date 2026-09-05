@@ -1,9 +1,9 @@
 import { Card, CardHeader } from "@/components/ui/Card";
 import { HelpTooltip } from "@/components/ui/HelpTooltip";
 import { StatusPill } from "@/components/ui/StatusPill";
-import { formatDateRange } from "@/lib/format";
-import { recruiterName } from "@/lib/adapters/weekly-focus.mock";
+import { recruiterName } from "@/lib/adapters/weekly-focus.seed";
 import type { WeeklyFocus } from "@/lib/adapters/types";
+import { formatDateRange } from "@/lib/format";
 
 export function WeeklyFocusCard({ focus, showOwner = false }: { focus: WeeklyFocus; showOwner?: boolean }) {
   return (
