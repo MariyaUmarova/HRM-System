@@ -159,14 +159,44 @@ home.
   until the approved HRM backend environment and real Auth/session boundary are ready.
   Mock persistence must never be described as production persistence.
 
+## Customer requests
+
+- Source Customer request data is visible only to the owning Customer and Head/HRD.
+  Recruiter receives no direct source-request or source-event read access, including
+  after assignment.
+- The durable request state machine is exactly:
+  - `draft` or `returned` → `submitted`;
+  - `submitted` → `returned` or `accepted`;
+  - `accepted` → `assigned`.
+- Customer may edit narrative fields only while the request is `draft` or `returned`,
+  and may edit/submit only their own request.
+- Customer ownership is immutable after request creation.
+- Returning for revision is a Head/HRD action and requires a non-empty revision comment.
+- Accepting and assigning are Head/HRD actions. Assignment requires an active Recruiter.
+- `assigned` is terminal in the currently approved request-management state machine;
+  no reassignment, reopen or physical-delete application path is approved yet.
+- Application transition history is append-only. Draft content edits produce audit but
+  do not create fake status-transition events.
+- Reviewed request mutations use strict optimistic concurrency and atomically write their
+  business change, transition event where applicable, and `audit_events` record. If audit
+  fails, the request transition/event must roll back.
+- Audit metadata must not copy Customer request narrative or revision-comment content.
+- The future server adapter must derive the actor from validated identity/session data;
+  browser-supplied actor ids are never trusted.
+- Secure expiring/single-purpose request-link issuance, revocation, expiry and request
+  creation behind that link are a separate security boundary and are **not** implied by
+  the current mock `[token]` route or by the database state-machine RPCs.
+- Do not treat assignment as authorization to create a Huntflow vacancy automatically.
+
 ## Data and security
 
 - Use synthetic data during development and demos.
 - Never commit credentials, tokens, real CVs, real offer files or candidate PII.
 - Access control is enforced server-side and with PostgreSQL RLS, not only in UI.
 - Use least privilege, audit sensitive actions and encrypt data in transit and at rest.
-- Source Customer request data is visible only to its Customer and Head/HRD. Assignment
-  metadata does not grant Recruiter direct read access to the source request.
+- Application audit history should be append-only. Current top-stack usage contains
+  INSERT writers and no legitimate UPDATE/DELETE writers; a dedicated hardening migration
+  may revoke service-role UPDATE/DELETE while preserving database-owner maintenance.
 - Do not apply HRM migrations to a cloud project selected only from stale docs/issues;
   the target environment must be explicitly identified and approved first.
 
