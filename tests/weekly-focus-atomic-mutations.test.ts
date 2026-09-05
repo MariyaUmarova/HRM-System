@@ -32,7 +32,7 @@ describe("weekly focus atomic server mutations", () => {
   it("keeps the functions security-invoker and service-role-only", () => {
     expect((compact.match(/security invoker/g) ?? [])).toHaveLength(3);
     expect(compact).not.toContain("security definer");
-    expect((compact.match(/set search_path = ''/g) ?? [])).toHaveLength(3);
+    expect((compact.match(/set search_path = ''/g) ?? [])).toHaveLength(4);
 
     for (const name of [
       "server_create_weekly_focus",
@@ -43,13 +43,18 @@ describe("weekly focus atomic server mutations", () => {
       expect(compact).toContain(`grant execute on function public.${name}(`);
     }
 
-    expect((compact.match(/from public, anon, authenticated;/g) ?? [])).toHaveLength(3);
-    expect((compact.match(/\) to service_role;/g) ?? [])).toHaveLength(3);
+    expect((compact.match(/from public, anon, authenticated;/g) ?? [])).toHaveLength(4);
+    expect((compact.match(/\) to service_role;/g) ?? [])).toHaveLength(4);
     expect(compact).not.toMatch(/grant execute[^;]+to authenticated/);
     expect(compact).not.toMatch(/grant execute[^;]+to anon/);
   });
 
-  it("requires optimistic concurrency for update and close", () => {
+  it("uses a strictly advancing row version for optimistic concurrency", () => {
+    expect(compact).toContain("drop trigger weekly_focus_items_touch_updated_at on public.weekly_focus_items");
+    expect(compact).toContain("create or replace function private.touch_weekly_focus_version()");
+    expect(compact).toContain("pg_catalog.clock_timestamp()");
+    expect(compact).toContain("old.updated_at + interval '1 microsecond'");
+    expect(compact).toContain("create trigger weekly_focus_items_touch_version");
     expect((compact.match(/p_expected_updated_at timestamptz/g) ?? [])).toHaveLength(2);
     expect((compact.match(/updated_at = p_expected_updated_at/g) ?? [])).toHaveLength(2);
     expect(compact).toContain("weekly focus update conflict: row missing, closed, or stale");
