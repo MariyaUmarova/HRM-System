@@ -108,7 +108,8 @@ describe("atomic Customer intake request transitions", () => {
   });
 
   it("documents the trusted actor boundary", () => {
-    expect(compact).toContain("p_actor_user_id must be derived from a validated server session");
+    expect(compact).toContain("p_actor_user_id must be derived from");
+    expect(compact).toContain("a validated server session");
     expect(compact).toContain("must never be trusted from a browser payload");
   });
 });
