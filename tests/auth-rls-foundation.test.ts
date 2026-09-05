@@ -82,6 +82,14 @@ describe("Phase 1 auth/RLS migration", () => {
     }
   });
 
+  it("allows authenticated users to resolve private RLS helpers without granting schema create", () => {
+    const compact = normalized(foundationSql);
+    expect(compact).toContain("revoke all on schema private from public, anon, authenticated;");
+    expect(compact).toContain("grant usage on schema private to authenticated;");
+    expect(compact).not.toContain("grant create on schema private to authenticated;");
+    expect(compact).not.toContain("grant usage on schema private to anon;");
+  });
+
   it("hardens every SECURITY DEFINER role helper with an empty search path", () => {
     const matches = hardeningSql.match(/security definer\s+set search_path = ''/g) ?? [];
     expect(matches).toHaveLength(2);
