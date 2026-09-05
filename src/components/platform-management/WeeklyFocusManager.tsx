@@ -6,6 +6,7 @@ import {
   closeWeeklyFocusItem,
   getWeeklyFocusServerSnapshot,
   getWeeklyFocusSnapshot,
+  isAllowedHuntflowUrl,
   subscribeWeeklyFocus,
   upsertWeeklyFocusItem,
 } from "@/lib/adapters/weekly-focus.store";
@@ -59,7 +60,7 @@ function validate(form: FormState): Record<string, string> {
   if (!RECRUITERS.some((item) => item.id === form.ownerRecruiterId)) errors.ownerRecruiterId = "Выберите рекрутера.";
   if (!form.vacancyExternalId.trim()) errors.vacancyExternalId = "Укажите Huntflow ID вакансии.";
   if (!form.vacancyTitle.trim()) errors.vacancyTitle = "Укажите название вакансии.";
-  if (!/^https:\/\//i.test(form.huntflowUrl.trim())) errors.huntflowUrl = "Укажите HTTPS-ссылку на вакансию в Huntflow.";
+  if (!isAllowedHuntflowUrl(form.huntflowUrl)) errors.huntflowUrl = "Укажите ссылку на вакансию в Huntflow.";
   return errors;
 }
 
