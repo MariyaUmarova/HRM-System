@@ -14,6 +14,25 @@ function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === "object" && value !== null;
 }
 
+function isAllowedHuntflowUrl(value: string): boolean {
+  try {
+    const url = new URL(value.trim());
+    if (url.protocol !== "https:") return false;
+    const host = url.hostname.toLowerCase();
+    return (
+      host === "huntflow.example" ||
+      host === "huntflow.ru" ||
+      host.endsWith(".huntflow.ru") ||
+      host === "huntflow.kz" ||
+      host.endsWith(".huntflow.kz") ||
+      host === "huntflow.uz" ||
+      host.endsWith(".huntflow.uz")
+    );
+  } catch {
+    return false;
+  }
+}
+
 function isSafeItem(value: unknown): value is WeeklyFocusItem {
   if (!isRecord(value) || !isRecord(value.vacancyRef)) return false;
   const vacancy = value.vacancyRef;
@@ -27,7 +46,7 @@ function isSafeItem(value: unknown): value is WeeklyFocusItem {
     typeof vacancy.title === "string" &&
     typeof vacancy.department === "string" &&
     typeof vacancy.huntflowUrl === "string" &&
-    /^https:\/\//i.test(vacancy.huntflowUrl)
+    isAllowedHuntflowUrl(vacancy.huntflowUrl)
   );
 }
 
@@ -102,7 +121,7 @@ function assertSafeDraft(draft: WeeklyFocusDraft) {
   if (!draft.title.trim() || !draft.priorityNote.trim()) throw new Error("Weekly focus text is required");
   if (!RECRUITERS.some((recruiter) => recruiter.id === draft.ownerRecruiterId)) throw new Error("Unknown recruiter");
   if (!draft.vacancyRef.externalId.trim() || !draft.vacancyRef.title.trim()) throw new Error("Huntflow reference is required");
-  if (!/^https:\/\//i.test(draft.vacancyRef.huntflowUrl.trim())) throw new Error("Unsafe Huntflow URL");
+  if (!isAllowedHuntflowUrl(draft.vacancyRef.huntflowUrl)) throw new Error("Unsafe Huntflow URL");
 }
 
 export function upsertWeeklyFocusItem(draft: WeeklyFocusDraft): WeeklyFocusItem {
