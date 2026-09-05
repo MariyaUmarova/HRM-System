@@ -107,6 +107,15 @@ describe("Phase 1 auth/RLS migration", () => {
     );
   });
 
+  it("keeps the foundation request policy fail-closed before hardening", () => {
+    const compact = normalized(foundationSql);
+    expect(compact).toContain("create policy intake_requests_authorized_read on public.intake_requests");
+    expect(compact).toContain("private.current_app_role() = 'customer' and customer_id = auth.uid()");
+    expect(compact).not.toContain(
+      "private.current_app_role() = 'recruiter' and assigned_recruiter_id = auth.uid()",
+    );
+  });
+
   it("isolates source requests to their Customer and management only", () => {
     const compact = normalized(hardeningSql);
     expect(compact).toContain("(select private.is_management_user())");
