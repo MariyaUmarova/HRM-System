@@ -54,6 +54,8 @@ describe("weekly focus atomic server mutations", () => {
     expect(compact).toContain("create or replace function private.touch_weekly_focus_version()");
     expect(compact).toContain("pg_catalog.clock_timestamp()");
     expect(compact).toContain("old.updated_at + interval '1 microsecond'");
+    expect(compact).toContain("new.closed_at is not null and new.closed_at < new.updated_at");
+    expect(compact).toContain("new.closed_at := new.updated_at");
     expect(compact).toContain("create trigger weekly_focus_items_touch_version");
     expect((compact.match(/p_expected_updated_at timestamptz/g) ?? [])).toHaveLength(2);
     expect((compact.match(/updated_at = p_expected_updated_at/g) ?? [])).toHaveLength(2);
