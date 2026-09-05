@@ -1,120 +1,145 @@
 # Recommended implementation roadmap
 
 This is an implementation order, not authorization to connect or mutate an external
-service without the product owner's confirmation.
+service without the Product Owner's confirmation.
 
-## Phase 0 — Make the project portable
+Status date: 2026-09-05.
 
-- [x] Create the private GitHub repository MariyaUmarova/HRM-System.
-- [x] Push the verified baseline to main (the repository had no application base
-  branch to target with a pull request).
-- [x] Enable CI for lint, tests and build.
-- [ ] Protect main and require the CI check for future pull requests.
-- [x] Connect Vercel to GitHub and publish browser-accessible previews.
-- [ ] Record environments: preview, development and production.
+## Phase 0 — Governance, portability and safe preview
 
-Current status: the source is available in private GitHub and Vercel creates preview
-deployments for review branches.
+- [x] Publish the repository and establish Git-based development.
+- [x] Enable CI for frozen install, lint, tests and production build.
+- [x] Establish browser-accessible preview/UAT infrastructure.
+- [x] Keep Preview/UAT synthetic and separate from production data.
+- [ ] Resolve repository visibility intentionally; the repository is currently public.
+- [ ] Protect `main` and require CI for merge.
+- [ ] Add/approve a repository ruleset that prevents ordinary direct pushes to `main`.
+- [ ] Record the final local / preview / dev / stage / prod environment map and data
+  boundaries.
 
-## Phase 1 — Supabase foundation
+Current blocker: `main` is not protected and repository rulesets are empty. Issue #3
+tracks this. Do not merge the active product stack until the governance decision is made.
 
-- [x] Build the agreed invitation contract prototype: @ivideon.com only,
-  Recruiter/Customer roles, and department/position required for a Customer.
-- Create separate development and production Supabase projects.
-- [x] Add the first Supabase config and versioned SQL migrations for the synthetic
-  HR Radar development slice.
-- Implement Auth and server-side session validation.
-- Model profiles and four product roles.
-- Enforce RLS, including strict customer request isolation.
-- Create audit events and integration connection metadata without storing raw secrets.
-- Add database tests and run Supabase security/performance advisors.
+## Phase 1 — Auth, profiles, RLS and durable HR Hub foundations
 
-Exit: real accounts and durable requests work safely; mock role switching is disabled
-outside local development.
+### 1A. Git-only Auth/RLS foundation — prepared in Draft PR #18
+
+- [x] Model exactly four product roles: Recruiter, Head of Recruitment, HRD, Customer.
+- [x] Keep Head of Recruitment and HRD management permissions equivalent.
+- [x] Model `profiles` on top of `auth.users`.
+- [x] Model invitation metadata without plaintext invitation tokens.
+- [x] Model durable Customer intake requests and append-only request events.
+- [x] Model generic audit-event and integration-connection metadata without credential
+  columns.
+- [x] Enable RLS and least-privilege grants for the new public tables.
+- [x] Keep source Customer requests visible only to their Customer and Head/HRD;
+  Recruiter receives no direct SELECT even when assigned.
+- [x] Harden SECURITY DEFINER role helpers with a private schema and pinned search path.
+- [x] Verify foundation-only and full migration chains in ephemeral PostgreSQL.
+- [ ] Approve/create the actual HRM Supabase development environment.
+- [ ] Apply migrations to the approved HRM development environment.
+- [ ] Run Supabase database security/performance advisors on that environment.
+- [ ] Wire Supabase Auth and server-side session validation into Next.js.
+- [ ] Remove development preview-role cookies outside local/UAT once real Auth is ready.
+
+Important: the current connected Supabase account exposes only `ivideon-seabattle` and
+`tablereels`; no HRM project is visible. Do not use either project for HRM migrations.
+
+### 1B. Durable weekly-focus contract — prepared in Draft PR #21
+
+- [x] Keep the management UI/browser flow in PR #20 with localStorage mock persistence.
+- [x] Define durable `weekly_focus_items` storage without a vacancy/candidate catalog.
+- [x] Give Head/HRD team/history read scope.
+- [x] Give Recruiter only own active rows; Customer and anon get no read scope.
+- [x] Keep authenticated browser mutations disabled.
+- [x] Enforce Recruiter ownership and Head/HRD mutation actors at database level.
+- [x] Verify migration, RLS, role integrity, Huntflow-host checks, work-week checks and
+  close lifecycle in ephemeral PostgreSQL.
+- [ ] Add reviewed server actions/RPCs for create/update/close with `audit_events` writes.
+- [ ] Replace the browser store with a server adapter only after the approved HRM dev
+  environment and real Auth are available.
+- [ ] Browser-UAT the durable path across Head/HRD → Recruiter after server wiring.
+
+Exit for Phase 1: real authenticated accounts, durable requests and durable weekly focus
+work in the approved HRM environment; Customer/Recruiter/management boundaries are
+verified both in browser and database; development role switching is not a security
+boundary.
 
 ## Phase 2 — Customer requests and management queue
 
-- Issue expiring/single-purpose customer request links.
-- Support draft, submitted, returned for revision, accepted and assigned states.
+- Issue secure expiring/single-purpose entry links only after the auth/session boundary is
+  approved.
+- Support draft, submitted, returned, accepted and assigned states durably.
 - Notify only Head of Recruitment and HRD about new submissions.
-- Allow management to assign a recruiter and record every status change.
-- Add rate limits, bot protection and audit history.
+- Allow management to assign a Recruiter while keeping source Customer request data out
+  of Recruiter direct read scope.
+- Deliver the required Recruiter working context through an explicitly approved derived
+  artifact/Huntflow boundary.
+- Record every status transition and sensitive action.
+- Add rate limits, bot protection and abuse controls.
 
-Exit: a customer can submit safely from any device without seeing the internal portal.
+Exit: Customer can submit safely without seeing the internal portal; management can
+process requests without leaking source Customer data to Recruiter.
 
 ## Phase 3 — Huntflow server integration
 
 - Confirm Huntflow API permissions, rate limits and webhook/polling capabilities.
-- Keep the API token server-side in a managed secret store.
-- Map only external IDs, deep links, sync timestamps and required attachment metadata.
-- Implement idempotent jobs, retry/backoff, dead-letter handling and reconciliation.
-- Attach interview analysis and generated offer files back to the correct Huntflow
-  candidate only after an explicit user confirmation.
+- Keep tokens server-side in an approved secret store.
+- Store only external IDs, deep links, sync timestamps and allowed derived metadata.
+- Never introduce HR Hub vacancy/candidate catalogs, cards, funnel or pipeline boards.
+- Implement idempotent jobs, retry/backoff and reconciliation.
+- Attach approved derived artifacts only after explicit human confirmation.
 
-Exit: integrations save clicks without duplicating Huntflow's ATS data model.
+Exit: Huntflow remains the ATS/source of truth while HR Hub reduces manual work.
 
-## Phase 4 — Offer Center
+## Phase 4 — Offer Center production path
 
-- [x] Build the supplied field model, fixed cover/task pages, optional task results,
-  assigned-request prefill, explicit human check and direct PDF/PNG/PPTX downloads for
-  product-owner testing.
-- Create durable versioned templates and persistence for approved artifacts.
-- Parse a free-form recruiter brief into structured fields with a review screen.
-- Validate required fields and highlight uncertainty; never invent compensation or
-  legal terms.
-- Render polished PDF, store exact artifact version and generate the fixed approval
-  email with sanitized CV/offer attachments.
-- Add Gmail and Yandex Mail adapters; start with drafts, then enable sending only with
-  explicit confirmation and audit.
-- Upload the approved offer to Huntflow idempotently.
+- [x] Keep the current client-side field model, preview and human-confirmation prototype.
+- [x] Keep PDF/PNG/PPTX exports blocked until human confirmation.
+- Create durable versioned offer artifacts only in the approved backend environment.
+- Preserve exact author/timestamp/version/audit provenance.
+- Validate uncertainty instead of inventing compensation, legal terms or approvals.
+- Add mail adapters as draft-first flows; enable sending only after explicit confirmation.
+- Add Huntflow upload idempotently and only after confirmation.
 
-Exit: the recruiter prepares a correct, reviewable approval package with minimal work.
+Exit: recruiter prepares a correct reviewable approval package; no automatic approval,
+compensation mutation, email send or Huntflow mutation occurs without a human action.
 
-## Phase 5 — Interview AI and search copilot
+## Phase 5 — Interview Analysis production path
 
-- [x] Build a client-only contract prototype on synthetic data: evidence-linked facts,
-  conclusions, risks and questions, editable Huntflow draft and explicit human check.
-- [x] Add the HTML-reference input variants: full transcript, short summary, notes,
-  other feedback, audio and video, with combinable sources and format validation.
-- Connect approved cloud transcription/video processing; define retention, redaction,
-  access and deletion rules before accepting real interview material.
-- Produce evidence-linked structured analysis with human approval.
-- Export the approved result to Huntflow.
-- Build search strategy help: role map, sourcing channels, Boolean queries and a short
-  prompt for the approved corporate AI chat.
-- Add spelling assistance as suggestions, not invisible edits.
+- [x] Keep the current evidence-linked local/synthetic analysis prototype.
+- [x] Keep protected/sensitive employment criteria excluded before matching.
+- [x] Keep human confirmation before using the Huntflow draft.
+- Approve a cloud processor, private storage, retention/deletion policy and access/audit
+  rules before accepting real candidate media.
+- Add transcription/video processing only within those approved boundaries.
+- Keep evidence links and explicit verification gaps.
+- Never rank candidates or recommend hire/reject automatically.
 
-Exit: AI accelerates preparation and analysis while humans approve all consequential
-content.
+Exit: AI accelerates preparation and analysis while humans remain accountable for
+consequential decisions.
 
-## Phase 6 — HR radar and knowledge operations
+## Phase 6 — HR Radar and knowledge operations
 
-- [x] Build a manually reviewed, attributed HR-news prototype with topic/text filters,
-  source links, saved items, freshness labels and explicit source-health notes.
-- [x] Ingest the first permitted RSS source (Mintrud document feed) into a private
-  review queue on a daily 09:00 MSK schedule.
-- [x] Add daily ChatGPT web discovery for Russian and international sources from the
-  latest 72 hours, with Russian summaries and source links written as pending review.
-- Add direct automatic adapters for sources where a stable permitted feed/API is useful.
-  Respect source terms and copyright.
-- [x] Deduplicate discovered Mintrud links and keep source attribution.
-- [x] Add AI summaries/classification for discovered sources; AI never publishes
-  automatically.
-- [x] Use web search as a discovery layer, not as an unverified database.
-- Add editorial review, freshness indicators and source health monitoring.
-- Add knowledge content ownership, revision history and stale-content reminders.
+- Preserve the existing attributed HR Radar prototype and reviewed-source boundary.
+- Independently re-verify any scheduled discovery task before describing it as active
+  infrastructure.
+- Keep newly discovered material `pending_review`; never auto-publish AI output.
+- Add editorial approval UI, source-health monitoring and stale-content ownership.
+- Respect source terms and copyright; store source metadata and short summaries rather
+  than copied articles.
 
-Exit: a useful, attributable HR news feed and maintainable knowledge base.
+Exit: attributable, reviewable HR intelligence and maintainable knowledge operations.
 
 ## Phase 7 — Production hardening and scale
 
-- Background job queue, distributed tracing, error monitoring and alerting.
-- Backup/restore drills, incident runbooks and data deletion/export procedures.
-- Load testing, rate limits and cost controls for AI and external APIs.
-- Security review, privacy impact assessment and model abuse protections.
-- Only introduce a Data Lake, Warehouse, Feature Store or dedicated model server when
-  measured volume/reuse requires it. Start with a modular monolith and managed
-  services; avoid premature platform complexity.
+- Observability, alerting and incident runbooks.
+- Backup/restore drills and data deletion/export procedures.
+- Rate limits and cost controls for AI/external APIs.
+- Security review and privacy impact assessment.
+- Load testing for actual measured traffic.
+- Add queues, warehouse/lake, feature store or dedicated model infrastructure only when
+  measured scale/reuse requires it.
 
-Exit: production readiness is demonstrated by tests, monitoring and operational
-runbooks rather than architecture diagrams alone.
+Exit: production readiness is demonstrated by tested controls and operations, not by
+architecture diagrams alone.

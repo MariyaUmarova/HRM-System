@@ -1,6 +1,6 @@
 # Approved product decisions
 
-These decisions are durable unless the product owner explicitly changes them.
+These decisions are durable unless the Product Owner explicitly changes them.
 
 ## Product boundary
 
@@ -130,8 +130,23 @@ home.
   the profile area. This does not create an Administrator role.
 - New customer requests and team weekly focus remain visible to management on the
   home screen; “Все заявки заказчиков” remains a contextual management action.
-- Weekly-focus editing by Head of Recruitment / HRD is a follow-up capability and must
-  preserve the same role model when implemented.
+
+## Weekly focus
+
+- Head of Recruitment and HRD manage weekly focus with the same permissions.
+- Recruiter sees only their own active weekly-focus items.
+- Customer has no weekly-focus or platform-management access.
+- A weekly-focus item contains the recruiter owner, task, priority/comment and only a
+  Huntflow vacancy reference (external id/title/department/deep link). This must never
+  become a vacancy catalog.
+- Closing a focus removes it from the Recruiter's active view but the durable backend
+  retains the closed record for management/history/audit instead of physically deleting
+  it.
+- Durable writes are server-controlled and audited; browser roles do not receive direct
+  INSERT/UPDATE/DELETE privileges on weekly-focus storage.
+- The current accepted UI implementation may use browser/localStorage mock persistence
+  until the approved HRM backend environment and real Auth/session boundary are ready.
+  Mock persistence must never be described as production persistence.
 
 ## Data and security
 
@@ -139,6 +154,10 @@ home.
 - Never commit credentials, tokens, real CVs, real offer files or candidate PII.
 - Access control is enforced server-side and with PostgreSQL RLS, not only in UI.
 - Use least privilege, audit sensitive actions and encrypt data in transit and at rest.
+- Source Customer request data is visible only to its Customer and Head/HRD. Assignment
+  metadata does not grant Recruiter direct read access to the source request.
+- Do not apply HRM migrations to a cloud project selected only from stale docs/issues;
+  the target environment must be explicitly identified and approved first.
 
 ## Interview material processing
 
@@ -164,13 +183,12 @@ home.
 
 ## HR Radar automation
 
-- Automatic discovery runs every day at 09:00 Moscow time.
+- Automatic discovery is intended to run every day at 09:00 Moscow time.
 - A newly discovered link is stored as `pending_review` and is never published
   automatically.
 - The first direct adapter is the public Mintrud document RSS feed.
-- A ChatGPT scheduled task with web search checks Russian and international public
-  sources from the latest 72 hours, writes Russian summaries through the connected
-  Supabase tool and does not require an OpenAI API key.
+- Any ChatGPT scheduled discovery task must be independently verified as active before
+  it is described as running infrastructure.
 - Search and summaries are a discovery layer, not a publication authority. HR review
   is mandatory before a card becomes visible.
 - The ingestion flow stores source metadata, title, date, canonical link, short summary,
